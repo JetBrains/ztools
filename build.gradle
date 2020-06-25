@@ -1,0 +1,16 @@
+
+allprojects {
+    group = 'org.jetbrains.ztools'
+    version = '0.0.12'
+}
+
+subprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+        maven {
+            url "https://repo.labs.intellij.net/artifactory/big-data-ide"
+        }
+    }
+}

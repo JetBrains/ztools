@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'maven-publish'
+    id "com.github.hierynomus.license" version "0.15.0"
+}
+dependencies {
+    implementation project(':ztools-scala-repl')
+    implementation project(':ztools-spark')
+}
+
+test.dependsOn (':ztools-scala-repl:test')
+test.dependsOn (':ztools-spark:test')
+licenseFormat.dependsOn(':ztools-scala-repl:licenseFormat')
+licenseFormat.dependsOn(':ztools-spark:licenseFormat')
+
+tasks.jar.configure {
+    classifier = 'default'
+}
+
+shadowJar {
+    dependencies {
+        exclude("org.scala*", "org.apache.spark:*", "scala*")
+    }
+    classifier = null
+}
+
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+        }
+    }
+    repositories {
+        maven {
+            url "https://repo.labs.intellij.net/artifactory/big-data-ide/"
+        }
+    }
+}
+
+build.finalizedBy(shadowJar)
