@@ -221,7 +221,11 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
         if (ref != null && ref != info.path) {
           result.put(info.path, new JSONObject().put(Names.REF, ref))
         } else {
-          result.put(info.path, toJson(info, depth, info.path))
+          try {
+            result.put(info.path, toJson(info, depth, info.path))
+          } catch {
+            case e: Exception => //maybe we should log exceptions?
+          }
         }
       }
     }

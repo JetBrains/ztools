@@ -130,6 +130,18 @@ class SparkHandlersTest extends ReplAware {
     }
   }
 
+  @Test
+  def testRddHandlerWithError(): Unit =     withRepl {
+    repl =>
+      val view = repl.getVariablesView()
+      repl.eval(
+        """
+        val rdd = sc.textFile("file:///home/nikita.pavlenko/big-data/online_retail.csv")
+        """)
+      val json = view.toJsonObject
+      assert(json.toString() == "{}")
+  }
+
   private def checkStructField(json: JSONObject, metadata: JSONObject => Boolean, nullable: JSONObject => Boolean,
                                dataType: JSONObject => Boolean, name: JSONObject => Boolean): Unit = {
     val innerJson = json.getJSONObject("value")
