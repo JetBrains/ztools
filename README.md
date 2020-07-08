@@ -2,7 +2,7 @@
 
 Wrapper for scala interpreter for use with Apache Zeppelin server to provide values of variables between paragraphs execution.
 
-Used to provide variable view functionality for Jetbrains Big data tools plugin.  
+Used to provide variable view functionality for Jetbrains Big Data Tools plugin.  
 
 ## Getting Started
 
@@ -18,4 +18,4 @@ These instructions will get you a copy of the project up and running on your loc
 
 Apache Zeppelin (https://zeppelin.apache.org/)
 
-Big data tools (https://plugins.jetbrains.com/plugin/12494-big-data-tools)
+Big Data Tools (https://plugins.jetbrains.com/plugin/12494-big-data-tools)
