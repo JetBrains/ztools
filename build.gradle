@@ -10,7 +10,7 @@ subprojects {
         mavenCentral()
         jcenter()
         maven {
-            url "https://repo.labs.intellij.net/artifactory/big-data-ide"
+            url "https://dl.bintray.com/jetbrains/zeppelin-dependencies/"
         }
     }
 }
