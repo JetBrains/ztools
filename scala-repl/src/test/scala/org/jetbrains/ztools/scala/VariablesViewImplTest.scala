@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -214,10 +214,10 @@ class VariablesViewImplTest extends ReplAware {
       println(json.toString(2))
       assertEquals("a", getInPath[String](json, "a.value.memberB.value.memberA.ref"))
       assertEquals("a.memberB", getInPath[String](json, "b.ref"))
-//      assertEquals("b", getInPath(json, "a.value.memberB.ref"))
-//      assertEquals("a", getInPath(json, "b.value.memberA.ref"))
-//      assertEquals("class A", getInPath(json, "a.value.strInA.value"))
-//      assertEquals("class B", getInPath(json, "b.value.strInB.value"))
+      //      assertEquals("b", getInPath(json, "a.value.memberB.ref"))
+      //      assertEquals("a", getInPath(json, "b.value.memberA.ref"))
+      //      assertEquals("class A", getInPath(json, "a.value.strInA.value"))
+      //      assertEquals("class B", getInPath(json, "b.value.strInB.value"))
     }
   }
 
@@ -479,7 +479,8 @@ class VariablesViewImplTest extends ReplAware {
   def testListOfAny(): Unit =
     withRepl { intp =>
       val view = intp.getVariablesView()
-      val code = """
+      val code =
+        """
         class A(val x: Int)
         val a = List(1,Map(1->2),List(1,2,3), new A(10))
         val b = a(2) // inferred Any
@@ -516,7 +517,8 @@ class VariablesViewImplTest extends ReplAware {
   def testBrokenRefInObject(): Unit =
     withRepl { intp =>
       val view = intp.getVariablesView()
-      val code = """
+      val code =
+        """
       class C(z: Int)
       class B(val y: C)
       class A(var x: B)
@@ -525,11 +527,11 @@ class VariablesViewImplTest extends ReplAware {
       """
       intp.eval(code)
       var json = view.toJsonObject
-//      println(json.toString(2))
+      //      println(json.toString(2))
       assertEquals("a.x.y", getInPath[String](json, "c.ref"))
       intp.eval("a.x = null")
       json = view.toJsonObject
-//      println(json.toString(2))
+      //      println(json.toString(2))
       assertEquals("iw$C", getInPath[String](json, "c.type"))
     }
 
@@ -537,7 +539,8 @@ class VariablesViewImplTest extends ReplAware {
   def testBrokenRef(): Unit =
     withRepl { intp =>
       val view = intp.getVariablesView()
-      val code1 = """
+      val code1 =
+        """
         import java.text.DateFormat
         import java.util.Date
         val a = List(Map("sd"->List(Set(0),2,3,DateFormat.getDateTimeInstance)))
@@ -545,7 +548,8 @@ class VariablesViewImplTest extends ReplAware {
         val d = c("1")
 
       """
-      val code3 = """
+      val code3 =
+        """
         class A2(){
           val c = false
           val e = BigDecimal(2)
@@ -557,13 +561,14 @@ class VariablesViewImplTest extends ReplAware {
       """
       intp.eval(code1)
       var json = view.toJsonObject
-//      println(json.toString(2))
+      //      println(json.toString(2))
       println(">----------------")
       intp.eval(code3)
       json = view.toJsonObject
-//      println(json.toString(2))
+      //      println(json.toString(2))
       assertEquals("scala.collection.immutable.Set[Int]", getInPath[String](json, "d.type"))
-  }
+    }
+
   //  @Test
   //  def testPerformance(): Unit = {
   //    withRepl { intp =>

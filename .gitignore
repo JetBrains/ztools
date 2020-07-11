@@ -1,4 +1,5 @@
 .idea
+!.idea/codeStyles/codeStyleConfig.xml
 *.iml
 */target/**
 .gradle

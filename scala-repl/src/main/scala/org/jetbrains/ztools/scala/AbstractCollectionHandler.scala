@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,12 +19,15 @@ import org.jetbrains.ztools.core.Loopback
 import org.jetbrains.bigdataide.shaded.org.json.JSONObject
 
 abstract class AbstractCollectionHandler(limit: Int) extends AbstractTypeHandler {
+
   trait Iterator {
     def hasNext: Boolean
+
     def next: Any
   }
 
   def iterator(obj: Any): Iterator
+
   def length(obj: Any): Int
 
   override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {

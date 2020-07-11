@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -108,17 +108,17 @@ class SparkHandlersTest extends ReplAware {
           |""".stripMargin)
       val json = view.toJsonObject
       val schemaArray = getInPath[JSONObject](json, "bank.value.schema()").getJSONArray("value")
-      checkStructField(schemaArray.getJSONObject(0), { metadata  =>
+      checkStructField(schemaArray.getJSONObject(0), { metadata =>
         metadata.getString("type") == "org.apache.spark.sql.types.Metadata" &&
-        metadata.getString("value") == "{}"
+          metadata.getString("value") == "{}"
       }, { nullable =>
-          nullable.getBoolean("value") == true
+        nullable.getBoolean("value") == true
       }, { dataType =>
         dataType.getString("jvm-type") == "org.apache.spark.sql.types.IntegerType$"
       }, { name =>
         name.getString("value") == "age"
       })
-      checkStructField(schemaArray.getJSONObject(4), { metadata  =>
+      checkStructField(schemaArray.getJSONObject(4), { metadata =>
         metadata.getString("ref") == "bank.schema()[0].metadata"
       }, { nullable =>
         nullable.getBoolean("value") == true
@@ -131,7 +131,7 @@ class SparkHandlersTest extends ReplAware {
   }
 
   @Test
-  def testRddHandlerWithError(): Unit =     withRepl {
+  def testRddHandlerWithError(): Unit = withRepl {
     repl =>
       val view = repl.getVariablesView()
       repl.eval(

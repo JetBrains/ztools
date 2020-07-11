@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ import scala.reflect.runtime.{universe => ru}
 import scala.tools.nsc.interpreter.IMain
 
 class IMainWrapper(val iMain: IMain) {
+
   import iMain.global._
 
   import scala.util.{Try => Trying}
@@ -27,7 +28,8 @@ class IMainWrapper(val iMain: IMain) {
   private lazy val importToRuntime = ru.internal createImporter iMain.global
 
   private implicit def importFromRu(sym: ru.Symbol): Symbol = importToGlobal importSymbol sym
-  private implicit def importToRu(sym: Symbol): ru.Symbol   = importToRuntime importSymbol sym
+
+  private implicit def importToRu(sym: Symbol): ru.Symbol = importToRuntime importSymbol sym
 
   def oldValueOf(id: String) = iMain.valueOfTerm(id)
 
@@ -39,11 +41,13 @@ class IMainWrapper(val iMain: IMain) {
         line :: read :: "INSTANCE" :: rest
       } else fullName
     }
+
     def value(fullName: String) = {
       val universe = iMain.runtimeMirror.universe
       import universe.{InstanceMirror, Symbol, TermName}
       val pkg :: rest = fixClassBasedFullName((fullName split '.').toList)
       val top = iMain.runtimeMirror.staticPackage(pkg)
+
       @annotation.tailrec
       def loop(inst: InstanceMirror, cur: Symbol, path: List[String]): Option[Any] = {
         def mirrored =
@@ -51,7 +55,7 @@ class IMainWrapper(val iMain: IMain) {
           else iMain.runtimeMirror reflect (iMain.runtimeMirror reflectModule cur.asModule).instance
 
         path match {
-          case last :: Nil  =>
+          case last :: Nil =>
             cur.typeSignature.decls find (x => x.name.toString == last && x.isAccessor) map { m =>
               (mirrored reflectMethod m.asMethod).apply()
             }
@@ -73,8 +77,10 @@ class IMainWrapper(val iMain: IMain) {
           case Nil => None
         }
       }
+
       loop(null, top, rest)
     }
+
     Option(iMain.symbolOfTerm(id)) filter (_.exists) flatMap (s => Trying(value(s.fullName)).toOption.flatten)
   }
 }
