@@ -36,11 +36,6 @@ publishing {
             project.shadow.component(publication)
         }
     }
-    repositories {
-        maven {
-            url "https://repo.labs.intellij.net/artifactory/big-data-ide/"
-        }
-    }
 }
 
 build.finalizedBy(shadowJar)
