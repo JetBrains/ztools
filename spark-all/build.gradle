@@ -36,6 +36,11 @@ publishing {
             project.shadow.component(publication)
         }
     }
+    repositories {
+        maven {
+            url "https://packages.jetbrains.team/maven/p/bdt/bigdatatools"
+        }
+    }
 }
 
 build.finalizedBy(shadowJar)
