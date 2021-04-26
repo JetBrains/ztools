@@ -12,5 +12,8 @@ subprojects {
         maven {
             url "https://dl.bintray.com/jetbrains/zeppelin-dependencies/"
         }
+        maven {
+            url "https://packages.jetbrains.team/maven/p/bdt/bigdatatools"
+        }
     }
 }
