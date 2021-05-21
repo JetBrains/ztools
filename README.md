@@ -23,7 +23,7 @@ To use ZTools with Big Data Tools you need to do 2 things.
 2. You need to install the ZTools jar to the Zeppelin server. You can do it in auto and manual ways. The automatic way is to click to `Install ZTools...` in a bubble that appears after enabling ZTools integration in settings. The library will be download from maven repo `https://packages.jetbrains.team/maven/p/bdt/bigdatatools/`. During this operation, the repository and the dependency on the Zeppelin interpreter will be added.
 
 If you do not have the permissions to add repositories and dependencies to Zeppelin interpreters you need to ask the administrators to do it manually.
-You can add dependency as a file jar (https://packages.jetbrains.team/maven/p/bdt/bigdatatools/org/jetbrains/ztools/ztools-spark-all/0.211.1/ztools-spark-all-0.211.1.jar) or add to Zeppelin maven repo (`https://packages.jetbrains.team/maven/p/bdt/bigdatatools`) and maven artifact (`org.jetbrains.ztools:ztools-spark-all:0.211.1`).
+You can add dependency as a file jar (https://packages.jetbrains.team/maven/p/bdt/bigdatatools/org/jetbrains/ztools/ztools-spark-all/0.212.1/ztools-spark-all-0.212.1.jar) or add to Zeppelin maven repo (`https://packages.jetbrains.team/maven/p/bdt/bigdatatools`) and maven artifact (`org.jetbrains.ztools:ztools-spark-all:0.212.1`).
 
 After install, you need to run any paragraph in a Zeppelin notebook to collect data from the server.
 

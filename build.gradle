@@ -1,7 +1,7 @@
 
 allprojects {
     group = 'org.jetbrains.ztools'
-    version = '0.211.1'
+    version = '0.212.1'
 }
 
 subprojects {
