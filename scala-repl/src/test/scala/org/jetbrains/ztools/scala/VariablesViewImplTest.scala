@@ -471,7 +471,8 @@ class VariablesViewImplTest extends ReplAware {
       println(json.toString(2))
       val obj = getInPath[JSONObject](json, "a.value.x")
       assertEquals(2, obj.length())
-      assertEquals("scala.Int", obj.getString("type"))
+      // scala 2.11 returns scala.Int instead of Int in scala 2.12
+      assertEquals("Int", obj.getString("type"))
       assertTrue(obj.getBoolean("lazy"))
     }
 

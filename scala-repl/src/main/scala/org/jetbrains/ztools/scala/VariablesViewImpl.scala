@@ -16,7 +16,6 @@
 package org.jetbrains.ztools.scala
 
 import java.util.function.{Function => JFunction}
-
 import org.jetbrains.ztools.core.{Loopback, Names, TrieMap, TypeHandler}
 import org.jetbrains.bigdataide.shaded.org.json.JSONObject
 
@@ -182,6 +181,7 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
   private def get(instanceMirror: ru.InstanceMirror, symbol: ru.Symbol, path: String): ScalaVariableInfo = {
     if (!problems.contains(path))
       try {
+        if (symbol.isMethod && symbol.asTerm.isLazy && symbol.asTerm.getter.isPublic) return getLazyVal(symbol, path)
         // is public property
         if (!symbol.isMethod && symbol.isTerm && symbol.asTerm.getter.isPublic) {
           val term = symbol.asTerm
@@ -209,6 +209,17 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
       symbol =>
         get(instanceMirror, symbol, info.path)
     }.filter(_.isAccessible).toList
+  }
+
+  private def getLazyVal(symbol: ru.Symbol, path: String): ScalaVariableInfo = {
+    val term = symbol.asMethod
+    val fieldPath = s"$path.${term.name.toString.trim}"
+    val value = null
+    val tpe = (term.typeSignature match {
+      case nullaryType: ru.NullaryMethodType => nullaryType.resultType
+      case _ => return INACCESSIBLE
+    }).toString
+    ScalaVariableInfo(isAccessible = tpe != "<notype>", isLazy = true, value, tpe, fieldPath, getRef(value, fieldPath))
   }
 
   override def toJson: String = toJsonObject.toString(2)
