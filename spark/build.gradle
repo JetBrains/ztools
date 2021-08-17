@@ -8,6 +8,7 @@ license {
 dependencies {
     implementation 'org.jetbrains.bigdataide.shaded:shaded-org-json:20180813'
     testImplementation 'junit:junit:4.12'
+    implementation 'org.scala-lang:scala-compiler:2.12.10'
     implementation project(':ztools-scala-repl')
     compileOnly 'org.apache.spark:spark-core_2.12:3.0.1'
     compileOnly 'org.apache.spark:spark-sql_2.12:3.0.1'
