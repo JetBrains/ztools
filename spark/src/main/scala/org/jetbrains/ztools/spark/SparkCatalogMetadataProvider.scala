@@ -154,7 +154,7 @@ class SparkCatalogMetadataProvider(spark: SparkSession) extends CatalogMetadataP
       database =>
         val db = new JSONObject()
         val tbs = new JSONArray()
-        findInSchema(database, "databaseName").map {
+        findInSchema(database, "namespace").map {
           databaseName =>
             spark.sql(s"show tables from $databaseName").collect().foreach {
               table =>
