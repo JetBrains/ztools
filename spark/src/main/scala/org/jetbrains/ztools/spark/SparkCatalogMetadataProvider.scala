@@ -15,11 +15,12 @@
  */
 package org.jetbrains.ztools.spark
 
-import org.apache.spark.sql.catalog.Catalog
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.{Row, SparkSession}
 import org.jetbrains.bigdataide.shaded.org.json.{JSONArray, JSONObject}
 
 
-class SparkCatalogMetadataProvider(catalog: Catalog) extends CatalogMetadataProvider {
+class SparkCatalogMetadataProvider(spark: SparkSession) extends CatalogMetadataProvider {
   override def listTables(dbName: String): JSONArray = {
     val arr = new JSONArray()
     catalog.listTables(dbName).collect().foreach {
@@ -87,6 +88,20 @@ class SparkCatalogMetadataProvider(catalog: Catalog) extends CatalogMetadataProv
   }
 
   override def toJson: JSONObject = {
+    try {
+      fromCatalog
+    } catch {
+      case e: Throwable =>
+        try {
+          fromSpark.put("exceptionFromCatalog", exceptionText(e))
+        } catch {
+          case e: Throwable =>
+            new JSONObject().put("exceptionFromSql", exceptionText(e))
+        }
+    }
+  }
+
+  def fromCatalog: JSONObject = {
     val json = new JSONObject()
     val dbs = new JSONArray()
     val currentDatabase = catalog.currentDatabase
@@ -131,4 +146,60 @@ class SparkCatalogMetadataProvider(catalog: Catalog) extends CatalogMetadataProv
     json.put("databases", dbs)
     json
   }
+
+  def fromSpark: JSONObject = {
+    val json = new JSONObject()
+    val dbs = new JSONArray()
+    spark.sql("show databases").collect().foreach {
+      database =>
+        val db = new JSONObject()
+        val tbs = new JSONArray()
+        findInSchema(database, "databaseName").map {
+          databaseName =>
+            spark.sql(s"show tables from $databaseName").collect().foreach {
+              table =>
+                val tb = new JSONObject()
+                val cols = new JSONArray()
+                findInSchema(table, "tableName").map {
+                  tableName =>
+                    spark.sql(s"desc $databaseName.$tableName").collect().foreach {
+                      column =>
+                        val columnObject = new JSONObject()
+                        findInSchema(column, "col_name").map { columnName => columnObject.put("name", columnName) }
+                        findInSchema(column, "data_type").map { dataType => columnObject.put("dataType", dataType) }
+                        cols.put(columnObject)
+                    }
+                    tb.put("columns", cols)
+                    findBoolInSchema(table, "isTemporary").map{ isTemp => tb.put("isTemporary", isTemp) }
+                    tb.put("name", tableName)
+                    tbs.put(tb)
+                }
+            }
+            db.put("tables", tbs)
+            db.put("name", databaseName)
+            dbs.put(db)
+        }
+    }
+    json.put("databases", dbs)
+    json
+  }
+
+  private def exceptionText(e: Throwable) = e.getStackTrace.mkString(System.lineSeparator())
+
+  private def findBoolInSchema(row: Row, fieldName: String): Option[Boolean] = {
+    row.schema.fields.zipWithIndex.find{ case (field: StructField, _) => field.name == fieldName }.map(_._2).flatMap{ index =>
+      row(index) match {
+        case b: Boolean => Some(b)
+        case _ => None
+      }
+    }
+  }
+
+  private def findInSchema(row: Row, fieldName: String): Option[String] = {
+    row.schema.fields.zipWithIndex.find { case (field: StructField, _) => field.name == fieldName }.map(_._2).map { index =>
+      row(index).toString
+    }
+  }
+
+  private val catalog = spark.catalog
 }
