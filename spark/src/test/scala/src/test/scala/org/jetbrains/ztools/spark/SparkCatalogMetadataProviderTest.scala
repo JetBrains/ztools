@@ -56,6 +56,9 @@ class SparkCatalogMetadataProviderTest {
     withSpark { spark =>
       import spark.implicits._
       val sc = spark.sparkContext
+      if (spark.catalog.tableExists("test_table_2")) {
+        spark.sql("drop table test_table_2")
+      }
       val df = sc.parallelize(List((1, "hello"), (2, "world"))).toDF("id", "text")
       try {
         df.write.saveAsTable("test_table_2")
@@ -74,7 +77,11 @@ class SparkCatalogMetadataProviderTest {
         assert(table.getString("name") == "test_table_2")
         assert(!table.getBoolean("isTemporary"))
       } finally {
-        spark.sql("drop table test_table_2")
+        try {
+          spark.sql("drop table test_table_2")
+        } catch {
+          case e: Throwable =>
+        }
       }
     }
   }
