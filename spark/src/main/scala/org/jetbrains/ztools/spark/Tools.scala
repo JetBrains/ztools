@@ -70,7 +70,7 @@ object Tools {
     }
 
   def getCatalogProvider(catalogType: String = "spark"): CatalogMetadataProvider = catalogType match {
-    case "spark" => new SparkCatalogMetadataProvider(spark.catalog)
+    case "spark" => new SparkCatalogMetadataProvider(spark)
     case "external" => new ExternalCatalogMetadataProvider(spark.sharedState.externalCatalog)
     case _ => throw new IllegalArgumentException("catalogType must be \"spark\" or \"external\"")
   }
