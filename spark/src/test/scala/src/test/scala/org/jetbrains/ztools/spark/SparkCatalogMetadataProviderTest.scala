@@ -51,6 +51,9 @@ class SparkCatalogMetadataProviderTest {
     }
   }
 
+  //when facing weird exceptions for this test after switching branches try manually clearing metastore_db and
+  //spark-warehouse directories; this test uses different HIVE versions for scala 2.11 and scala 2.12 and this seems to
+  //lead to incompatibilities
   @Test
   def fromSparkContextTest(): Unit = {
     withSpark { spark =>
