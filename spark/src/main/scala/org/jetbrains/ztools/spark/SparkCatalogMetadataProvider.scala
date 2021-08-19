@@ -91,12 +91,13 @@ class SparkCatalogMetadataProvider(spark: SparkSession) extends CatalogMetadataP
     try {
       fromCatalog
     } catch {
-      case e: Throwable =>
+      case catalogThrowable: Throwable =>
         try {
-          fromSpark.put("exceptionFromCatalog", exceptionText(e))
+          fromSpark.put("exceptionFromCatalog", exceptionText(catalogThrowable))
         } catch {
-          case e: Throwable =>
-            new JSONObject().put("exceptionFromSql", exceptionText(e))
+          case sqlThrowable: Throwable =>
+            new JSONObject().put("exceptionFromCatalog", exceptionText(catalogThrowable))
+              .put("exceptionFromSql", exceptionText(sqlThrowable))
         }
     }
   }
@@ -170,7 +171,7 @@ class SparkCatalogMetadataProvider(spark: SparkSession) extends CatalogMetadataP
                         cols.put(columnObject)
                     }
                     tb.put("columns", cols)
-                    findBoolInSchema(table, "isTemporary").map{ isTemp => tb.put("isTemporary", isTemp) }
+                    findBoolInSchema(table, "isTemporary").map { isTemp => tb.put("isTemporary", isTemp) }
                     tb.put("name", tableName)
                     tbs.put(tb)
                 }
@@ -187,7 +188,7 @@ class SparkCatalogMetadataProvider(spark: SparkSession) extends CatalogMetadataP
   private def exceptionText(e: Throwable) = e.getStackTrace.mkString(System.lineSeparator())
 
   private def findBoolInSchema(row: Row, fieldName: String): Option[Boolean] = {
-    row.schema.fields.zipWithIndex.find{ case (field: StructField, _) => field.name == fieldName }.map(_._2).flatMap{ index =>
+    row.schema.fields.zipWithIndex.find { case (field: StructField, _) => field.name == fieldName }.map(_._2).flatMap { index =>
       row(index) match {
         case b: Boolean => Some(b)
         case _ => None
