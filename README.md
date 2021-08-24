@@ -25,15 +25,15 @@ To use ZTools with Big Data Tools you need to do 2 things.
 If you do not have the permissions to add repositories and dependencies to Zeppelin interpreters you need to ask the administrators to do it manually.
 You can add dependency as a jar file:
 
-for scala 2.11 -> https://packages.jetbrains.team/maven/p/bdt/bigdatatools/org/jetbrains/ztools/ztools-spark-all/0.211.1/ztools-spark-all-0.211.1.jar
+for scala 2.11 -> https://packages.jetbrains.team/maven/p/bdt/bigdatatools/org/jetbrains/ztools/ztools-spark-all/0.211.2/ztools-spark-all-0.211.2.jar
 
-for scala 2.12 -> https://packages.jetbrains.team/maven/p/bdt/bigdatatools/org/jetbrains/ztools/ztools-spark-all/0.212.1/ztools-spark-all-0.212.1.jar
+for scala 2.12 -> https://packages.jetbrains.team/maven/p/bdt/bigdatatools/org/jetbrains/ztools/ztools-spark-all/0.212.2/ztools-spark-all-0.212.2.jar
 
 or add to Zeppelin maven repo (`https://packages.jetbrains.team/maven/p/bdt/bigdatatools`) and maven artifact:
 
-for scala 2.11 -> `org.jetbrains.ztools:ztools-spark-all:0.211.1`
+for scala 2.11 -> `org.jetbrains.ztools:ztools-spark-all:0.211.2`
 
-for scala 2.12 -> `org.jetbrains.ztools:ztools-spark-all:0.212.1`
+for scala 2.12 -> `org.jetbrains.ztools:ztools-spark-all:0.212.2`
 
 After install, you need to run any paragraph in a Zeppelin notebook to collect data from the server.
 
