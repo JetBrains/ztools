@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala
+package org.jetbrains.ztools.scala.handlers
 
-import org.jetbrains.ztools.core.Loopback
-import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+class SeqHandler(limit: Int) extends AbstractCollectionHandler(limit) {
+  override def accept(obj: Any): Boolean = obj.isInstanceOf[Seq[_]]
 
-class SpecialsHandler(limit: Int) extends AbstractTypeHandler {
-  override def accept(obj: Any): Boolean = obj.getClass.getCanonicalName != null && obj.getClass.getCanonicalName.startsWith("scala.")
+  override def iterator(obj: Any): Iterator = new Iterator {
+    private val it = obj.asInstanceOf[Seq[_]].iterator
 
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
-    json =>
-      json.put("value", obj.toString.take(limit))
+    override def hasNext: Boolean = it.hasNext
+
+    override def next: Any = it.next()
   }
+
+  override def length(obj: Any): Int = obj.asInstanceOf[Seq[_]].size
 }

@@ -16,12 +16,13 @@
 package org.jetbrains.ztools.scala
 
 import java.util.function.{Function => JFunction}
-
 import org.jetbrains.ztools.core.{Loopback, Names, TrieMap, TypeHandler}
 import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.jetbrains.ztools.scala.handlers.{AbstractTypeHandler, AnyValHandler, ArrayHandler, JavaCollectionHandler, MapHandler, NullHandler, SeqHandler, SetHandler, SpecialsHandler, StringHandler, ThrowableHandler}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.language.implicitConversions
 
 abstract class VariablesViewImpl(val collectionSizeLimit: Int,
                                  val stringSizeLimit: Int,
@@ -29,7 +30,6 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
                                  val filterUnitResults: Boolean,
                                  val enableProfiling: Boolean,
                                  val depth: Int) extends VariablesView {
-
   private val ru = scala.reflect.runtime.universe
   private val mirror = ru.runtimeMirror(getClass.getClassLoader)
   private val touched = mutable.Map[String, ScalaVariableInfo]()
@@ -54,7 +54,7 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
     new SpecialsHandler(stringSizeLimit)
   ).map(new HandlerWrapper(_))
 
-  val problems = mutable.Map[String, ReflectionProblem]()
+  val problems: mutable.Map[String, ReflectionProblem] = mutable.Map[String, ReflectionProblem]()
 
   private case class ScalaVariableInfo(isAccessible: Boolean,
                                        isLazy: Boolean,
@@ -226,7 +226,7 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
           try {
             result.put(info.path, toJson(info, depth, info.path))
           } catch {
-            case e: Exception => //maybe we should log exceptions?
+            case _: Exception => //maybe we should log exceptions?
           }
         }
       }

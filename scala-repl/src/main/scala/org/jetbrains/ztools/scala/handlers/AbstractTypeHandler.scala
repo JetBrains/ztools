@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala
+package org.jetbrains.ztools.scala.handlers
 
-import org.jetbrains.ztools.core.{Names, TypeHandler}
 import org.jetbrains.bigdataide.shaded.org.json.{JSONArray, JSONObject}
+import org.jetbrains.ztools.core.{Names, TypeHandler}
 
 abstract class AbstractTypeHandler extends TypeHandler {
   protected def withJsonArray(body: JSONArray => Unit): JSONArray = {

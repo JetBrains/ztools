@@ -15,7 +15,7 @@
  */
 package org.jetbrains.ztools.scala.test
 
-import org.jetbrains.ztools.scala.{IMainWrapper, VariablesView, VariablesViewImpl}
+import org.jetbrains.ztools.scala.{ZtoolsInterpreterWrapper, VariablesView, VariablesViewImpl}
 import org.jetbrains.bigdataide.shaded.org.json.JSONObject
 
 import scala.tools.nsc.Settings
@@ -43,7 +43,7 @@ class ReplAware {
 
     bindings(iLoop.intp)
 
-    val wrapper = new IMainWrapper(iLoop.intp)
+    val wrapper = new ZtoolsInterpreterWrapper(iLoop.intp)
 
     def env(depth: Int, isProfilingEnabled: Boolean): VariablesView = new VariablesViewImpl(
       collectionSizeLimit = 100,

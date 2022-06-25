@@ -13,23 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.spark
+package org.jetbrains.ztools.scala.handlers
 
-import org.apache.spark.sql.SparkSession
-import org.jetbrains.ztools.core.{Loopback, Names}
-import org.jetbrains.ztools.scala.AbstractTypeHandler
 import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.jetbrains.ztools.core.Loopback
 
-class SparkSessionHandler extends AbstractTypeHandler {
-  override def accept(obj: Any): Boolean = obj.isInstanceOf[SparkSession]
+abstract class AbstractCollectionHandler(limit: Int) extends AbstractTypeHandler {
+  trait Iterator {
+    def hasNext: Boolean
+
+    def next: Any
+  }
+
+  def iterator(obj: Any): Iterator
+
+  def length(obj: Any): Int
 
   override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
     json =>
-      val spark = obj.asInstanceOf[SparkSession]
-      json.put(Names.VALUE, withJsonObject { json =>
-        json.put("version()", spark.version)
-        json.put("sparkContext", loopback.pass(spark.sparkContext, s"$id.sparkContext"))
-        json.put("sharedState", loopback.pass(spark.sharedState, s"$id.sharedState"))
+      json.put("jvm-type", obj.getClass.getCanonicalName)
+      json.put("length", length(obj))
+      json.put("value", withJsonArray { json =>
+        val it = iterator(obj)
+        var index = 0
+        while (it.hasNext && index < limit) {
+          json.put(extract(loopback.pass(it.next, s"$id[$index]")))
+          index += 1
+        }
       })
   }
 }

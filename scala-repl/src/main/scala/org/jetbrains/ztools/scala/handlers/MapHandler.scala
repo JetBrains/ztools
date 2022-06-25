@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala
+package org.jetbrains.ztools.scala.handlers
 
-import org.jetbrains.ztools.core.Loopback
 import org.jetbrains.bigdataide.shaded.org.json.{JSONArray, JSONObject}
+import org.jetbrains.ztools.core.Loopback
 
 class MapHandler(limit: Int) extends AbstractTypeHandler {
   override def handle(obj: Any, id: String, loopback: Loopback): JSONObject =

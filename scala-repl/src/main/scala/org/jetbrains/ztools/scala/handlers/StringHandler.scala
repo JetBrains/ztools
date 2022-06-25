@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala
+package org.jetbrains.ztools.scala.handlers
 
-import java.io.{PrintWriter, StringWriter}
-
-import org.jetbrains.ztools.core.Loopback
 import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.jetbrains.ztools.core.Loopback
 
-class ThrowableHandler extends AbstractTypeHandler {
-  override def accept(obj: Any): Boolean = obj.isInstanceOf[Throwable]
+class StringHandler(limit: Int) extends AbstractTypeHandler {
+  override def accept(obj: Any): Boolean = obj.isInstanceOf[String]
 
   override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
     json =>
-      val e = obj.asInstanceOf[Throwable]
-      val writer = new StringWriter()
-      val out = new PrintWriter(writer)
-      e.printStackTrace(out)
-      json.put("value", writer.toString)
+      val str = obj.asInstanceOf[String]
+      json.put("value", str.take(limit))
   }
 }
+

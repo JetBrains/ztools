@@ -15,11 +15,12 @@
  */
 package org.jetbrains.ztools.scala
 
+import scala.language.implicitConversions
 import scala.reflect.runtime.{universe => ru}
 import scala.tools.nsc.interpreter.IMain
 
-class IMainWrapper(val iMain: IMain) {
-
+//noinspection TypeAnnotation
+class ZtoolsInterpreterWrapper(val iMain: IMain) {
   import iMain.global._
 
   import scala.util.{Try => Trying}
@@ -27,11 +28,11 @@ class IMainWrapper(val iMain: IMain) {
   private lazy val importToGlobal = iMain.global mkImporter ru
   private lazy val importToRuntime = ru.internal createImporter iMain.global
 
-  private implicit def importFromRu(sym: ru.Symbol): Symbol = importToGlobal importSymbol sym
+  private implicit def importFromRu(sym: ru.Symbol) = importToGlobal importSymbol sym
 
   private implicit def importToRu(sym: Symbol): ru.Symbol = importToRuntime importSymbol sym
 
-  def oldValueOf(id: String) = iMain.valueOfTerm(id)
+  def oldValueOf(id: String): Option[Any] = iMain.valueOfTerm(id)
 
   // see https://github.com/scala/scala/pull/5852/commits/a9424205121f450dea2fe2aa281dd400a579a2b7
   def valueOfTerm(id: String): Option[Any] = exitingTyper {

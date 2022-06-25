@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala
+package org.jetbrains.ztools.scala.handlers
 
-import org.jetbrains.ztools.core.Loopback
 import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.jetbrains.ztools.core.Loopback
 
 class AnyValHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean =

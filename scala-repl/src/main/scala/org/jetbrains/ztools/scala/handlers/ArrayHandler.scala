@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala
+package org.jetbrains.ztools.scala.handlers
 
-class SetHandler(limit: Int) extends AbstractCollectionHandler(limit) {
+class ArrayHandler(limit: Int) extends AbstractCollectionHandler(limit) {
+  override def accept(obj: Any): Boolean = obj.isInstanceOf[Array[_]]
+
+  override def length(obj: Any): Int = obj.asInstanceOf[Array[_]].length
+
   override def iterator(obj: Any): Iterator = new Iterator {
-    private val it = obj.asInstanceOf[Set[_]].iterator
+    private val it = obj.asInstanceOf[Array[_]].iterator
 
     override def hasNext: Boolean = it.hasNext
 
-    override def next: Any = it.next()
+    override def next: Any = it.next
   }
-
-  override def length(obj: Any): Int = obj.asInstanceOf[Set[_]].size
-
-  override def accept(obj: Any): Boolean = obj.isInstanceOf[Set[_]]
 }
