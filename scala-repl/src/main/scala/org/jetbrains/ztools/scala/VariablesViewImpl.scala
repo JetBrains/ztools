@@ -16,8 +16,7 @@
 package org.jetbrains.ztools.scala
 
 import org.codehaus.jettison.json.JSONObject
-import org.jetbrains.ztools.core.TrieMap
-import org.jetbrains.ztools.scala.core.{Loopback, Names, TypeHandler}
+import org.jetbrains.ztools.scala.core.{Loopback, Names, TrieMap, TypeHandler}
 import org.jetbrains.ztools.scala.handlers._
 
 import java.util.function.{Function => JFunction}
@@ -106,7 +105,7 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
       case ref: AnyRef =>
         val wrapper = new ReferenceWrapper(ref)
         if (refMap.contains(wrapper)) {
-          if (refInvMap.get(path) != wrapper) clearRefIfPathExists()
+          if (refInvMap.get(path).orNull != wrapper) clearRefIfPathExists()
           refMap(wrapper)
         } else {
           clearRefIfPathExists()

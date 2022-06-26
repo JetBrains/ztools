@@ -8,7 +8,6 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
         maven {
             url "https://packages.jetbrains.team/maven/p/bdt/bigdatatools"
         }
