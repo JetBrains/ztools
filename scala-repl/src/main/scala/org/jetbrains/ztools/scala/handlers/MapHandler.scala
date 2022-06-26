@@ -16,7 +16,7 @@
 package org.jetbrains.ztools.scala.handlers
 
 import org.codehaus.jettison.json.{JSONArray, JSONObject}
-import org.jetbrains.ztools.core.Loopback
+import org.jetbrains.ztools.scala.core.Loopback
 
 class MapHandler(limit: Int) extends AbstractTypeHandler {
   override def handle(obj: Any, id: String, loopback: Loopback): JSONObject =

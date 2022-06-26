@@ -17,7 +17,7 @@ package spark.handlers
 
 import org.apache.spark.sql.SparkSession
 import org.codehaus.jettison.json.JSONObject
-import org.jetbrains.ztools.core.{Loopback, Names}
+import org.jetbrains.ztools.scala.core.{Loopback, Names}
 import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
 
 class SparkSessionHandler extends AbstractTypeHandler {

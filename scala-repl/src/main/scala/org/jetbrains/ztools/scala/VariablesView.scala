@@ -16,7 +16,7 @@
 package org.jetbrains.ztools.scala
 
 import org.codehaus.jettison.json.JSONObject
-import org.jetbrains.ztools.core.TypeHandler
+import org.jetbrains.ztools.scala.core.TypeHandler
 
 trait VariablesView {
   def toJson: String

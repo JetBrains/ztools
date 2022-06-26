@@ -16,7 +16,7 @@
 package org.jetbrains.ztools.scala.handlers
 
 import org.codehaus.jettison.json.{JSONArray, JSONObject}
-import org.jetbrains.ztools.core.{Names, TypeHandler}
+import org.jetbrains.ztools.scala.core.{Names, TypeHandler}
 
 import scala.collection.JavaConversions.asScalaIterator
 

@@ -16,7 +16,7 @@
 package org.jetbrains.ztools.scala.handlers
 
 import org.codehaus.jettison.json.JSONObject
-import org.jetbrains.ztools.core.Loopback
+import org.jetbrains.ztools.scala.core.Loopback
 
 abstract class AbstractCollectionHandler(limit: Int) extends AbstractTypeHandler {
   trait Iterator {

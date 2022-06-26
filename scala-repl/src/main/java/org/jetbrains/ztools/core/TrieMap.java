@@ -72,7 +72,7 @@ public class TrieMap<T> {
         return node != null;
     }
 
-    static String[] split(String key) {
+    public static String[] split(String key) {
         int n = 0, j = 0;
         for (int i = 0; i < key.length(); i++) {
             if (key.charAt(i) == '.') n++;
