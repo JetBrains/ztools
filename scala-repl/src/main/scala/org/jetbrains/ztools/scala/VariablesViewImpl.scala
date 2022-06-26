@@ -70,12 +70,10 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
   private class ReferenceWrapper(val ref: AnyRef) {
     override def hashCode(): Int = ref.hashCode()
 
-    override def equals(obj: Any): Boolean = {
-      obj match {
-        case value: ReferenceWrapper =>
-          ref.eq(value.ref)
-        case _ => false
-      }
+    override def equals(obj: Any): Boolean = obj match {
+      case value: ReferenceWrapper =>
+        ref.eq(value.ref)
+      case _ => false
     }
   }
 
@@ -209,8 +207,7 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
     val instanceSymbol = instanceMirror.symbol
     val members = instanceSymbol.toType.members
     members.map {
-      symbol =>
-        get(instanceMirror, symbol, info.path)
+      symbol => get(instanceMirror, symbol, info.path)
     }.filter(_.isAccessible).toList
   }
 
@@ -219,19 +216,19 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
   override def toJsonObject: JSONObject = {
     val result = new JSONObject()
     variables().filter { name => !blackList.contains(name) }.foreach { name =>
-      val info = getInfo(name)
-      val ref = getRef(info.value, name)
-      if (!(filterUnitResults && isUnitResult(info))) {
-        touched(info.path) = info
-        if (ref != null && ref != info.path) {
-          result.put(info.path, new JSONObject().put(Names.REF, ref))
-        } else {
-          try {
+      try {
+        val info = getInfo(name)
+        val ref = getRef(info.value, name)
+        if (!(filterUnitResults && isUnitResult(info))) {
+          touched(info.path) = info
+          if (ref != null && ref != info.path) {
+            result.put(info.path, new JSONObject().put(Names.REF, ref))
+          } else {
             result.put(info.path, toJson(info, depth, info.path))
-          } catch {
-            case _: Exception => //maybe we should log exceptions?
           }
         }
+      } catch {
+        case _: Exception => //maybe we should log exceptions?
       }
     }
     result

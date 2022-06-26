@@ -32,8 +32,6 @@ class ZtoolsInterpreterWrapper(val iMain: IMain) {
 
   private implicit def importToRu(sym: Symbol): ru.Symbol = importToRuntime importSymbol sym
 
-  def oldValueOf(id: String): Option[Any] = iMain.valueOfTerm(id)
-
   // see https://github.com/scala/scala/pull/5852/commits/a9424205121f450dea2fe2aa281dd400a579a2b7
   def valueOfTerm(id: String): Option[Any] = exitingTyper {
     def fixClassBasedFullName(fullName: List[String]): List[String] = {
