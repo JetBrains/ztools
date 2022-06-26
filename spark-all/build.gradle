@@ -6,13 +6,10 @@ plugins {
 }
 dependencies {
     implementation project(':ztools-scala-repl')
-    implementation project(':ztools-spark')
 }
 
 test.dependsOn (':ztools-scala-repl:test')
-test.dependsOn (':ztools-spark:test')
 licenseFormat.dependsOn(':ztools-scala-repl:licenseFormat')
-licenseFormat.dependsOn(':ztools-spark:licenseFormat')
 
 tasks.jar.configure {
     classifier = 'default'

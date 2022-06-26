@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.spark
+package spark
 
 import org.apache.spark.sql.SparkSession
 import org.jetbrains.ztools.scala.{VariablesView, VariablesViewImpl, ZtoolsInterpreterWrapper}
-import org.jetbrains.ztools.spark.handlers.{DatasetHandler, RDDHandler, SparkContextHandler, SparkSessionHandler}
+import spark.handlers.{DatasetHandler, RDDHandler, SparkContextHandler, SparkSessionHandler}
 
 import scala.tools.nsc.interpreter.IMain
 

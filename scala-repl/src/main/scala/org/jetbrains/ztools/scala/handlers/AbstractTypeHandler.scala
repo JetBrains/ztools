@@ -15,8 +15,10 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.jetbrains.bigdataide.shaded.org.json.{JSONArray, JSONObject}
+import org.codehaus.jettison.json.{JSONArray, JSONObject}
 import org.jetbrains.ztools.core.{Names, TypeHandler}
+
+import scala.collection.JavaConversions.asScalaIterator
 
 abstract class AbstractTypeHandler extends TypeHandler {
   protected def withJsonArray(body: JSONArray => Unit): JSONArray = {
@@ -32,7 +34,7 @@ abstract class AbstractTypeHandler extends TypeHandler {
   }
 
   protected def extract(json: JSONObject): Any =
-    if (json.keySet().size() == 1) json.get("value") else json
+    if (json.keys().size == 1) json.get("value") else json
 
   protected def wrap(obj: Any, tpe: String): JSONObject = withJsonObject {
     json =>

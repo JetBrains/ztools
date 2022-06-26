@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.spark.handlers
+package spark.handlers
 
 import org.apache.spark.sql.Dataset
-import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.core.{Loopback, Names}
 import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
 

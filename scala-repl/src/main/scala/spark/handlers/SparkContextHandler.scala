@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.spark.handlers
+package spark.handlers
 
-import org.apache.spark.sql.SparkSession
-import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.apache.spark.SparkContext
+import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.core.{Loopback, Names}
 import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
 
-class SparkSessionHandler extends AbstractTypeHandler {
-  override def accept(obj: Any): Boolean = obj.isInstanceOf[SparkSession]
+class SparkContextHandler extends AbstractTypeHandler {
+  override def accept(obj: Any): Boolean = obj.isInstanceOf[SparkContext]
 
   override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
     json =>
-      val spark = obj.asInstanceOf[SparkSession]
+      val sc = obj.asInstanceOf[SparkContext]
       json.put(Names.VALUE, withJsonObject { json =>
-        json.put("version()", spark.version)
-        json.put("sparkContext", loopback.pass(spark.sparkContext, s"$id.sparkContext"))
-        json.put("sharedState", loopback.pass(spark.sharedState, s"$id.sharedState"))
+        json.put("sparkUser", wrap(sc.sparkUser, "String"))
+        json.put("sparkTime", wrap(sc.startTime, "Long"))
+        json.put("applicationId()", wrap(sc.applicationId, "String"))
+        json.put("applicationAttemptId()", wrap(sc.applicationAttemptId.toString, "Option[String]"))
+        json.put("appName()", sc.appName)
       })
   }
 }

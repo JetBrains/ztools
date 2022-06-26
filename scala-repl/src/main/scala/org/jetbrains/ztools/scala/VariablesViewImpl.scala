@@ -15,11 +15,11 @@
  */
 package org.jetbrains.ztools.scala
 
-import java.util.function.{Function => JFunction}
+import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.core.{Loopback, Names, TrieMap, TypeHandler}
-import org.jetbrains.bigdataide.shaded.org.json.JSONObject
-import org.jetbrains.ztools.scala.handlers.{AbstractTypeHandler, AnyValHandler, ArrayHandler, JavaCollectionHandler, MapHandler, NullHandler, SeqHandler, SetHandler, SpecialsHandler, StringHandler, ThrowableHandler}
+import org.jetbrains.ztools.scala.handlers._
 
+import java.util.function.{Function => JFunction}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
@@ -140,7 +140,7 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
       override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
         result =>
           if (depth > 0) withJsonObject {
-            tree =>
+            tree: JSONObject =>
               if (info.value != null)
                 listAccessibleProperties(info).foreach { field =>
                   touched(field.path) = field
@@ -150,7 +150,10 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
                     tree.put(field.name, toJson(field, depth - 1, field.path))
                   }
                 }
-              if (!tree.isEmpty) result.put(Names.VALUE, tree) else result.put(Names.VALUE, obj.toString.take(stringSizeLimit))
+              if (tree.length() != 0)
+                result.put(Names.VALUE, tree)
+              else
+                result.put(Names.VALUE, obj.toString.take(stringSizeLimit))
           } else {
             result.put(Names.VALUE, obj.toString.take(stringSizeLimit))
           }

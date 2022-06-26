@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.spark
+package spark
 
 import org.apache.spark.sql.SparkSession
-import org.jetbrains.ztools.scala.VariablesView
-import org.jetbrains.ztools.scala.test.ReplAware
-import org.jetbrains.bigdataide.shaded.org.json.JSONObject
-import org.jetbrains.ztools.spark.handlers.{DatasetHandler, RDDHandler, SparkSessionHandler}
+import org.codehaus.jettison.json.JSONObject
+import org.jetbrains.ztools.scala.{ReplAware, VariablesView}
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import spark.handlers.{DatasetHandler, RDDHandler, SparkSessionHandler}
 
 import scala.tools.nsc.interpreter.IMain
 

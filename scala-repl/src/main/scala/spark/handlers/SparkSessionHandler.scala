@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.spark.handlers
+package spark.handlers
 
-import org.apache.spark.rdd.RDD
-import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.apache.spark.sql.SparkSession
+import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.core.{Loopback, Names}
 import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
 
-class RDDHandler extends AbstractTypeHandler {
-  override def accept(obj: Any): Boolean = obj.isInstanceOf[RDD[_]]
+class SparkSessionHandler extends AbstractTypeHandler {
+  override def accept(obj: Any): Boolean = obj.isInstanceOf[SparkSession]
 
   override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
     json =>
-      val rdd = obj.asInstanceOf[RDD[_]]
-      json.put(Names.VALUE, withJsonObject { value =>
-        value.put("getNumPartitions()", wrap(rdd.getNumPartitions, "Int"))
-        value.put("name", wrap(rdd.name, "String"))
-        value.put("id", wrap(rdd.id, "Int"))
-        value.put("partitioner", wrap(rdd.partitioner.toString, "Option[org.apache.spark.Partitioner]"))
-        value.put("getStorageLevel()", wrap(rdd.getStorageLevel.toString, "org.apache.spark.storage.StorageLevel"))
+      val spark = obj.asInstanceOf[SparkSession]
+      json.put(Names.VALUE, withJsonObject { json =>
+        json.put("version()", spark.version)
+        json.put("sparkContext", loopback.pass(spark.sparkContext, s"$id.sparkContext"))
+        json.put("sharedState", loopback.pass(spark.sharedState, s"$id.sharedState"))
       })
   }
 }

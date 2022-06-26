@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.test
+package org.jetbrains.ztools.scala
 
-import org.jetbrains.ztools.scala.{ZtoolsInterpreterWrapper, VariablesView, VariablesViewImpl}
-import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.codehaus.jettison.json.JSONObject
 
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{ILoop, IMain, JPrintWriter}

@@ -15,7 +15,7 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.core.Loopback
 
 class NullHandler extends AbstractTypeHandler {

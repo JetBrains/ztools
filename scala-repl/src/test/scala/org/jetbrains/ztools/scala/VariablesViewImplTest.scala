@@ -15,10 +15,11 @@
  */
 package org.jetbrains.ztools.scala
 
-import org.jetbrains.ztools.scala.test.ReplAware
-import org.jetbrains.bigdataide.shaded.org.json.{JSONArray, JSONObject}
+import org.codehaus.jettison.json.{JSONArray, JSONObject}
 import org.junit.Assert.{assertEquals, assertNotNull, assertTrue}
 import org.junit.Test
+
+import scala.collection.JavaConversions.asScalaIterator
 
 class VariablesViewImplTest extends ReplAware {
   val base = 0
@@ -32,41 +33,41 @@ class VariablesViewImplTest extends ReplAware {
       var json = view.toJsonObject
       println(json.toString(2))
       val x = json.getJSONObject("x")
-      assertEquals(2, x.keySet.size)
+      assertEquals(2, x.keys().size)
       assertEquals(1, x.getInt("value"))
       assertEquals("Int", x.getString("type"))
-      assertEquals(1, json.keySet.size)
+      assertEquals(1, json.keys().size)
 
       intp.eval("val list = List(1,2,3,4)")
       json = view.toJsonObject
       println(json.toString(2))
       val list = json.getJSONObject("list")
-      assertEquals(4, list.keySet.size)
+      assertEquals(4, list.keys().size)
       assertEquals(4, list.getInt("length"))
       assertEquals("List[Int]", list.getString("type"))
       assertEquals(new JSONArray().put(1).put(2).put(3).put(4).toString, list.getJSONArray("value").toString)
-      assertEquals(2, json.keySet.size)
+      assertEquals(2, json.keys().size)
 
       intp.eval("val map = Map(1 -> 2, 2 -> 3, 3 -> 4)")
       json = view.toJsonObject
       println(json.toString(2))
       val map = json.getJSONObject("map")
-      assertEquals(5, map.keySet.size)
+      assertEquals(5, map.keys().size)
       assertEquals(3, map.getInt("length"));
       assertEquals("scala.collection.immutable.Map[Int,Int]", map.getString("type"))
       val m = Map(1 -> 2, 2 -> 3, 3 -> 4)
       val key = map.getJSONArray("key").getInt(0)
       val value = map.getJSONArray("value").getInt(0)
       assertEquals(value, m(key))
-      assertEquals(3, json.keySet.size)
+      assertEquals(3, json.keys().size)
 
       intp.eval("1 + 1")
       json = view.toJsonObject
       val res1 = json.getJSONObject(s"res$base")
-      assertEquals(2, res1.keySet.size)
+      assertEquals(2, res1.keys().size)
       assertEquals(2, res1.getInt("value"))
       assertEquals("Int", res1.getString("type"))
-      assertEquals(4, json.keySet.size)
+      assertEquals(4, json.keys().size)
     }
   }
 
@@ -80,23 +81,23 @@ class VariablesViewImplTest extends ReplAware {
       var json = view.toJsonObject
       //      println(json.toString(2))
       val a = json.getJSONObject("a")
-      assertEquals(3, a.keySet.size)
+      assertEquals(3, a.keys().size)
       assertEquals("iw$A", a.getString("type"))
       val aObj = a.getJSONObject("value")
-      assertEquals(1, aObj.keySet.size)
+      assertEquals(1, aObj.keys().size)
       val ax = aObj.getJSONObject("x")
-      assertEquals(2, ax.keySet.size)
+      assertEquals(2, ax.keys().size)
       assertEquals(1, ax.getInt("value"))
       // scala 2.11 returns scala.Int instead of Int in scala 2.12
       assertTrue(ax.getString("type") == "Int" || ax.getString("type") == "scala.Int")
-      assertEquals(1, json.keySet.size)
+      assertEquals(1, json.keys().size)
 
       val qDef = "class Q {\n" + "val a = Array(1,2,3)\n" + "val b = List(\"hello\", \"world\")\n" + "val c: List[List[String]] = List()\n" + "var y = 10\n" + "def m(): Int = 10\n" + "}"
       intp.eval(qDef)
       intp.eval("val q = new Q()")
       json = view.toJsonObject
       val qObj = json.getJSONObject("q").getJSONObject("value")
-      assertEquals(4, qObj.keySet.size)
+      assertEquals(4, qObj.keys().size)
       assertEquals(3, qObj.getJSONObject("a").get("length"))
       val tpe = qObj.getJSONObject("c").getString("type")
       assertTrue("scala.List[scala.List[String]]" == tpe || "List[List[String]]" == tpe)
@@ -114,7 +115,7 @@ class VariablesViewImplTest extends ReplAware {
       intp.eval("val b = new B(a)")
       intp.eval("val c = new B(a)")
       val json = view.toJsonObject
-      assertEquals(3, json.keySet.size) // a, b, c
+      assertEquals(3, json.keys().size) // a, b, c
 
       assertEquals("a", getInPath(json, "b.value.q.ref"))
       assertEquals("a", getInPath(json, "c.value.q.ref"))
@@ -134,7 +135,7 @@ class VariablesViewImplTest extends ReplAware {
       intp.eval("val a = new A(11)") // top level term has been changed but looks the same
 
       val json = view.toJsonObject
-      assertEquals(2, json.keySet.size)
+      assertEquals(2, json.keys().size)
       assertEquals(10, getInPath[Int](json, "b.value.q.value.x.value"))
     }
   }
@@ -149,7 +150,7 @@ class VariablesViewImplTest extends ReplAware {
       val json = view.toJsonObject
       println(json.toString(2))
       assertEquals("String", getInPath(json, "a.value.x.type"))
-      assertEquals(false, json.getJSONObject("a").getJSONObject("value").getJSONObject("x").keySet.contains("value"))
+      assertEquals(false, json.getJSONObject("a").getJSONObject("value").getJSONObject("x").keys().contains("value"))
     }
   }
 
@@ -167,7 +168,7 @@ class VariablesViewImplTest extends ReplAware {
 
       intp.eval("b.q.x = 11")
       json = view.toJsonObject
-      assertEquals(1, json.keySet.size)
+      assertEquals(1, json.keys().size)
       assertEquals(11, getInPath[Int](json, "b.value.p.value.x.value"))
       assertEquals("b.p", getInPath(json, "b.value.q.ref"))
 
@@ -177,7 +178,7 @@ class VariablesViewImplTest extends ReplAware {
         .getJSONObject("b")
         .getJSONObject("value")
         .getJSONObject("p")
-        .keySet.size) // type only
+        .keys().size) // type only
 
       assertEquals(11, getInPath[Int](json, "b.value.q.value.x.value"))
     }
@@ -299,7 +300,7 @@ class VariablesViewImplTest extends ReplAware {
       val json = env.toJsonObject("b", 2)
       //      // {"path":"b.a","value":{"type":"Line_1.A","value":{"id":{"type":"kotlin.Int","value":"10"}}}}
       //      println(json.toString(2))
-      assertEquals(2, json.keySet().size) // path & value
+      assertEquals(2, json.keys().size) // path & value
       //      println(getInPath(json, "value.type"))
     }
   }
@@ -387,7 +388,7 @@ class VariablesViewImplTest extends ReplAware {
       // variables() must filter classes and methods
       // like that iLoop.intp.definedSymbolList.filter { x => x.isGetter }
       //      println(json.toString())
-      assertTrue(json.isEmpty)
+      assertTrue(json.length()==0)
     }
   }
 
@@ -406,7 +407,7 @@ class VariablesViewImplTest extends ReplAware {
       assertNotNull(view)
       intp.eval(code)
       val json = view.toJsonObject
-      assertEquals(1, json.getJSONObject("a").getJSONObject("value").keySet().size())
+      assertEquals(1, json.getJSONObject("a").getJSONObject("value").keys().size)
     }
   }
 

@@ -15,7 +15,7 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.jetbrains.bigdataide.shaded.org.json.{JSONArray, JSONObject}
+import org.codehaus.jettison.json.{JSONArray, JSONObject}
 import org.jetbrains.ztools.core.Loopback
 
 class MapHandler(limit: Int) extends AbstractTypeHandler {

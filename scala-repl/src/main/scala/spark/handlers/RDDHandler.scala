@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.spark.handlers
+package spark.handlers
 
-import org.apache.spark.SparkContext
-import org.jetbrains.bigdataide.shaded.org.json.JSONObject
+import org.apache.spark.rdd.RDD
+import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.core.{Loopback, Names}
 import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
 
-class SparkContextHandler extends AbstractTypeHandler {
-  override def accept(obj: Any): Boolean = obj.isInstanceOf[SparkContext]
+class RDDHandler extends AbstractTypeHandler {
+  override def accept(obj: Any): Boolean = obj.isInstanceOf[RDD[_]]
 
   override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
     json =>
-      val sc = obj.asInstanceOf[SparkContext]
-      json.put(Names.VALUE, withJsonObject { json =>
-        json.put("sparkUser", wrap(sc.sparkUser, "String"))
-        json.put("sparkTime", wrap(sc.startTime, "Long"))
-        json.put("applicationId()", wrap(sc.applicationId, "String"))
-        json.put("applicationAttemptId()", wrap(sc.applicationAttemptId.toString, "Option[String]"))
-        json.put("appName()", sc.appName)
+      val rdd = obj.asInstanceOf[RDD[_]]
+      json.put(Names.VALUE, withJsonObject { value =>
+        value.put("getNumPartitions()", wrap(rdd.getNumPartitions, "Int"))
+        value.put("name", wrap(rdd.name, "String"))
+        value.put("id", wrap(rdd.id, "Int"))
+        value.put("partitioner", wrap(rdd.partitioner.toString, "Option[org.apache.spark.Partitioner]"))
+        value.put("getStorageLevel()", wrap(rdd.getStorageLevel.toString, "org.apache.spark.storage.StorageLevel"))
       })
   }
 }
