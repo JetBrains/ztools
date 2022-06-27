@@ -19,6 +19,7 @@ import org.apache.commons.lang.exception.ExceptionUtils
 import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.{Loopback, Names, TrieMap, TypeHandler}
 import org.jetbrains.ztools.scala.handlers._
+import spark.handlers.{DatasetHandler, RDDHandler, SparkContextHandler, SparkSessionHandler}
 
 import java.util.function.{Function => JFunction}
 import scala.collection.mutable
@@ -59,7 +60,11 @@ abstract class VariablesViewImpl(val timeout: Int,
     new MapHandler(collectionSizeLimit),
     new ThrowableHandler(),
     new AnyValHandler(),
-    new SpecialsHandler(stringSizeLimit)
+    new SpecialsHandler(stringSizeLimit),
+    new DatasetHandler(),
+    new RDDHandler(),
+    new SparkContextHandler(),
+    new SparkSessionHandler()
   ).map(new HandlerWrapper(_))
 
   val problems: mutable.Map[String, ReflectionProblem] = mutable.Map[String, ReflectionProblem]()
