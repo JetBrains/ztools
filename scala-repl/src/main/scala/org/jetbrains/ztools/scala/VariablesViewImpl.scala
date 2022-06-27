@@ -15,6 +15,7 @@
  */
 package org.jetbrains.ztools.scala
 
+import org.apache.commons.lang.exception.ExceptionUtils
 import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.{Loopback, Names, TrieMap, TypeHandler}
 import org.jetbrains.ztools.scala.handlers._
@@ -38,7 +39,10 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
     def accept(info: ScalaVariableInfo): Boolean = info.isLazy || handler.accept(info.value)
 
     def handle(info: ScalaVariableInfo, loopback: Loopback): JSONObject =
-      if (info.isLazy) new JSONObject().put(Names.LAZY, true) else handler.handle(info.value, info.path, loopback)
+      if (info.isLazy)
+        new JSONObject().put(Names.LAZY, true)
+      else
+        handler.handle(info.value, info.path, loopback)
   }
 
   private val handlerChain = ListBuffer[AbstractTypeHandler](
@@ -55,6 +59,7 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
   ).map(new HandlerWrapper(_))
 
   val problems: mutable.Map[String, ReflectionProblem] = mutable.Map[String, ReflectionProblem]()
+  val errors: mutable.MutableList[String] = mutable.MutableList()
 
   private case class ScalaVariableInfo(isAccessible: Boolean,
                                        isLazy: Boolean,
@@ -195,7 +200,8 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
       } catch {
         case e: Throwable => problems(path) = ReflectionProblem(e, symbol.toString, 1)
       }
-    else problems(path).count += 1
+    else
+      problems(path).count += 1
 
     INACCESSIBLE
   }
@@ -209,6 +215,19 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
     members.map {
       symbol => get(instanceMirror, symbol, info.path)
     }.filter(_.isAccessible).toList
+  }
+
+  def toFullJson: JSONObject = {
+    val result = new JSONObject()
+    result.put("variables", toJsonObject)
+
+    val errors = problems.map { case (name, refProblem) =>
+      f"$name: Reflection error for ${refProblem.symbol} counted ${refProblem.count} times.\n" +
+        f"${ExceptionUtils.getMessage(refProblem.e)}\n${ExceptionUtils.getStackTrace(refProblem.e)}"
+    }.toList
+
+    result.put("errors", errors ++ this.errors.toList)
+    result
   }
 
   override def toJson: String = toJsonObject.toString(2)
@@ -228,7 +247,8 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
           }
         }
       } catch {
-        case _: Exception => //maybe we should log exceptions?
+        case t: Throwable => errors +=
+          f"${ExceptionUtils.getRootCauseMessage(t)}\n${ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(t))}"
       }
     }
     result

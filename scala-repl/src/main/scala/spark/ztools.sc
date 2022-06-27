@@ -30,7 +30,7 @@ private def getVariables: String = {
     override def typeOfExpression(id: String): String = iMain.typeOfExpression(id, silent = true).toString()
   }
 
-  variableView.toJson
+  variableView.toFullJson.toString(2)
 }
 
 val variablesJson = getVariables
