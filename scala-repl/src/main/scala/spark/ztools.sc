@@ -13,6 +13,7 @@ try {
   val enableProfiling: Boolean = false
   val collectionSizeLimit = 100
   val stringSizeLimit = 400
+  val timeout = 5000
   val blackList = "$intp,sc,spark,sqlContext,z,engine".split(',').toList
   val whiteList: Option[List[String]] = Option(null)
 
@@ -20,6 +21,7 @@ try {
   def getVariables: String = {
     val iMainWrapper = new ZtoolsInterpreterWrapper(iMain)
     val variableView = new VariablesViewImpl(
+      timeout = timeout,
       collectionSizeLimit = collectionSizeLimit,
       stringSizeLimit = stringSizeLimit,
       blackList = blackList,

@@ -25,7 +25,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 
-abstract class VariablesViewImpl(val collectionSizeLimit: Int,
+abstract class VariablesViewImpl(val timeout: Int,
+                                 val collectionSizeLimit: Int,
                                  val stringSizeLimit: Int,
                                  val blackList: List[String],
                                  val whiteList: List[String] = null,
@@ -35,6 +36,8 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
   private val ru = scala.reflect.runtime.universe
   private val mirror = ru.runtimeMirror(getClass.getClassLoader)
   private val touched = mutable.Map[String, ScalaVariableInfo]()
+
+  private val startTime = System.currentTimeMillis()
 
   class HandlerWrapper(val handler: TypeHandler) {
     def accept(info: ScalaVariableInfo): Boolean = info.isLazy || handler.accept(info.value)
@@ -60,7 +63,6 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
   ).map(new HandlerWrapper(_))
 
   val problems: mutable.Map[String, ReflectionProblem] = mutable.Map[String, ReflectionProblem]()
-  val errors: mutable.MutableList[String] = mutable.MutableList()
 
   private case class ScalaVariableInfo(isAccessible: Boolean,
                                        isLazy: Boolean,
@@ -121,6 +123,7 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
     }
   }
 
+  //noinspection ScalaUnusedSymbol
   private implicit def toJavaFunction[A, B](f: A => B): JFunction[A, B] = new JFunction[A, B] {
     override def apply(a: A): B = f(a)
   }
@@ -237,24 +240,28 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
     val result = new JSONObject()
     variables()
       .filter { name => !blackList.contains(name) }
-      .filter { name => whiteList == null ||  whiteList.contains(name) }
+      .filter { name => whiteList == null || whiteList.contains(name) }
       .foreach { name =>
-      try {
-        val info = getInfo(name)
-        val ref = getRef(info.value, name)
-        if (!(filterUnitResults && isUnitResult(info))) {
-          touched(info.path) = info
-          if (ref != null && ref != info.path) {
-            result.put(info.path, new JSONObject().put(Names.REF, ref))
-          } else {
-            result.put(info.path, toJson(info, depth, info.path))
-          }
+        if (System.currentTimeMillis() - startTime > timeout) {
+          errors += s"Variables collect timeout. Exceed ${timeout}ms."
+          return result
         }
-      } catch {
-        case t: Throwable => errors +=
-          f"${ExceptionUtils.getRootCauseMessage(t)}\n${ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(t))}"
+        try {
+          val info = getInfo(name)
+          val ref = getRef(info.value, name)
+          if (!(filterUnitResults && isUnitResult(info))) {
+            touched(info.path) = info
+            if (ref != null && ref != info.path) {
+              result.put(info.path, new JSONObject().put(Names.REF, ref))
+            } else {
+              result.put(info.path, toJson(info, depth, info.path))
+            }
+          }
+        } catch {
+          case t: Throwable => errors +=
+            f"${ExceptionUtils.getRootCauseMessage(t)}\n${ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(t))}"
+        }
       }
-    }
     result
   }
 

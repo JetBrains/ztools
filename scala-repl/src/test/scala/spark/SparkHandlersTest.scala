@@ -17,7 +17,7 @@ package spark
 
 import org.apache.spark.sql.SparkSession
 import org.codehaus.jettison.json.JSONObject
-import org.jetbrains.ztools.scala.{ReplAware, VariablesView}
+import org.jetbrains.ztools.scala.{ReplAware, VariablesView, VariablesViewImpl}
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import spark.handlers.{DatasetHandler, RDDHandler, SparkSessionHandler}
@@ -107,6 +107,7 @@ class SparkHandlersTest extends ReplAware {
           |).toDF()
           |""".stripMargin)
       val json = view.toJsonObject
+      assertEquals("", view.errors.mkString(","))
       val schemaArray = getInPath[JSONObject](json, "bank.value.schema()").getJSONArray("value")
       checkStructField(schemaArray.getJSONObject(0), { metadata =>
         metadata.getString("type") == "org.apache.spark.sql.types.Metadata" &&
@@ -151,8 +152,8 @@ class SparkHandlersTest extends ReplAware {
     assert(name(innerJson.getJSONObject("name")))
   }
 
-  override protected def configure(variablesView: VariablesView): VariablesView =
-    super.configure(variablesView)
+  override protected def configure(variablesView: VariablesViewImpl) =
+     super.configure(variablesView)
       .registerTypeHandler(new DatasetHandler())
       .registerTypeHandler(new RDDHandler())
       .registerTypeHandler(new SparkSessionHandler())

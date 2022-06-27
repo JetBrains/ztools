@@ -18,7 +18,11 @@ package org.jetbrains.ztools.scala
 import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.TypeHandler
 
+import scala.collection.mutable
+
 trait VariablesView {
+  val errors: mutable.MutableList[String] = mutable.MutableList()
+
   def toJson: String
 
   def toJsonObject: JSONObject

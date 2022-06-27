@@ -96,6 +96,7 @@ class VariablesViewImplTest extends ReplAware {
       intp.eval(qDef)
       intp.eval("val q = new Q()")
       json = view.toJsonObject
+      assertEquals("", view.errors.mkString(","))
       val qObj = json.getJSONObject("q").getJSONObject("value")
       assertEquals(4, qObj.keys().size)
       assertEquals(3, qObj.getJSONObject("a").get("length"))
@@ -115,6 +116,7 @@ class VariablesViewImplTest extends ReplAware {
       intp.eval("val b = new B(a)")
       intp.eval("val c = new B(a)")
       val json = view.toJsonObject
+      assertEquals("", view.errors.mkString(","))
       assertEquals(3, json.keys().size) // a, b, c
 
       assertEquals("a", getInPath(json, "b.value.q.ref"))
@@ -388,7 +390,7 @@ class VariablesViewImplTest extends ReplAware {
       // variables() must filter classes and methods
       // like that iLoop.intp.definedSymbolList.filter { x => x.isGetter }
       //      println(json.toString())
-      assertTrue(json.length()==0)
+      assertTrue(json.length() == 0)
     }
   }
 
@@ -510,6 +512,7 @@ class VariablesViewImplTest extends ReplAware {
           |""".stripMargin
       intp.eval(p2)
       json = view.toJsonObject
+      assertEquals("", view.errors.mkString(","))
       // b isn't reference anymore
       assertEquals(4, getInPath[Int](json, "b.length"))
     }
