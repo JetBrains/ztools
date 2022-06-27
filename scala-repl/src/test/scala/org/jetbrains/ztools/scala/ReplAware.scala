@@ -15,8 +15,7 @@
  */
 package org.jetbrains.ztools.scala
 
-import org.codehaus.jettison.json.JSONObject
-
+import scala.collection.mutable
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{ILoop, IMain, JPrintWriter}
 
@@ -68,7 +67,7 @@ class ReplAware {
         iLoop.intp.interpret(code)
       }
 
-      override def getVariablesView(depth: Int, enableProfiling: Boolean) =  configure(env(depth, enableProfiling))
+      override def getVariablesView(depth: Int, enableProfiling: Boolean) = configure(env(depth, enableProfiling))
     })
 
     iLoop.closeInterpreter()
@@ -85,8 +84,11 @@ class ReplAware {
 
   protected def bindings(intp: IMain): Unit = {}
 
-  protected def getInPath[T](json: JSONObject, path: String): T = {
+  protected def getInPath[T](json: mutable.Map[String, Any], path: String): T = {
     val x :: xs = path.split('.').reverse.toList
-    xs.reverse.foldLeft(json) { (obj, key) => obj.getJSONObject(key) }.get(x).asInstanceOf[T]
+    val data = xs.reverse.foldLeft(json) { (obj, key) =>
+      obj(key).asInstanceOf[mutable.Map[String, Any]]
+    }
+    data(x).asInstanceOf[T]
   }
 }

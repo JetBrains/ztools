@@ -15,8 +15,9 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.Loopback
+
+import scala.collection.mutable
 
 class AnyValHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean =
@@ -32,9 +33,9 @@ class AnyValHandler extends AbstractTypeHandler {
       case _ => false
     }
 
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject =
+  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] =
     withJsonObject {
       json =>
-        json.put("value", obj)
+        json += ("value" -> obj)
     }
 }

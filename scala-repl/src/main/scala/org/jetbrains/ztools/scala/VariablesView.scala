@@ -15,7 +15,6 @@
  */
 package org.jetbrains.ztools.scala
 
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.TypeHandler
 
 import scala.collection.mutable
@@ -25,9 +24,9 @@ trait VariablesView {
 
   def toJson: String
 
-  def toJsonObject: JSONObject
+  def toJsonObject: mutable.Map[String, Any]
 
-  def toJsonObject(path: String, deep: Int): JSONObject
+  def toJsonObject(path: String, deep: Int): mutable.Map[String, Any]
 
   def variables(): List[String]
 

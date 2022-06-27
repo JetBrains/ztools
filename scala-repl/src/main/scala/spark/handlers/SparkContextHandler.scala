@@ -16,22 +16,23 @@
 package spark.handlers
 
 import org.apache.spark.SparkContext
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.{Loopback, Names}
 import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
+
+import scala.collection.mutable
 
 class SparkContextHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[SparkContext]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
+  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
     json =>
       val sc = obj.asInstanceOf[SparkContext]
-      json.put(Names.VALUE, withJsonObject { json =>
-        json.put("sparkUser", wrap(sc.sparkUser, "String"))
-        json.put("sparkTime", wrap(sc.startTime, "Long"))
-        json.put("applicationId()", wrap(sc.applicationId, "String"))
-        json.put("applicationAttemptId()", wrap(sc.applicationAttemptId.toString, "Option[String]"))
-        json.put("appName()", sc.appName)
+      json += (Names.VALUE -> withJsonObject { json =>
+        json += ("sparkUser" -> wrap(sc.sparkUser, "String"))
+        json += ("sparkTime" -> wrap(sc.startTime, "Long"))
+        json += ("applicationId()" -> wrap(sc.applicationId, "String"))
+        json += ("applicationAttemptId()" -> wrap(sc.applicationAttemptId.toString, "Option[String]"))
+        json += ("appName()" -> sc.appName)
       })
   }
 }

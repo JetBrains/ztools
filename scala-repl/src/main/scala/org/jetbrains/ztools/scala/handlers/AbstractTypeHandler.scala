@@ -15,30 +15,32 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.codehaus.jettison.json.{JSONArray, JSONObject}
 import org.jetbrains.ztools.scala.core.{Names, TypeHandler}
 
-import scala.collection.JavaConversions.asScalaIterator
+import scala.collection.mutable
 
 abstract class AbstractTypeHandler extends TypeHandler {
-  protected def withJsonArray(body: JSONArray => Unit): JSONArray = {
-    val arr = new JSONArray()
+  protected def withJsonArray(body: mutable.MutableList[Any] => Unit): mutable.MutableList[Any] = {
+    val arr = mutable.MutableList[Any]()
     body(arr)
     arr
   }
 
-  protected def withJsonObject(body: JSONObject => Unit): JSONObject = {
-    val obj = new JSONObject()
+  protected def withJsonObject(body: mutable.Map[String, Any] => Unit): mutable.Map[String, Any] = {
+    val obj = mutable.Map[String, Any]()
     body(obj)
     obj
   }
 
-  protected def extract(json: JSONObject): Any =
-    if (json.keys().size == 1) json.get("value") else json
+  protected def extract(json: mutable.Map[String, Any]): Any =
+    if (json.keys.size == 1)
+      json(Names.VALUE)
+    else
+      json
 
-  protected def wrap(obj: Any, tpe: String): JSONObject = withJsonObject {
+  protected def wrap(obj: Any, tpe: String): mutable.Map[String, Any] = withJsonObject {
     json =>
-      json.put(Names.VALUE, obj)
-      json.put(Names.TYPE, tpe)
+      json+=(Names.VALUE-> obj)
+      json+=(Names.TYPE-> tpe)
   }
 }

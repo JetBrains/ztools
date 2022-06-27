@@ -16,22 +16,23 @@
 package spark.handlers
 
 import org.apache.spark.rdd.RDD
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.{Loopback, Names}
 import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
+
+import scala.collection.mutable
 
 class RDDHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[RDD[_]]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
+  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
     json =>
       val rdd = obj.asInstanceOf[RDD[_]]
-      json.put(Names.VALUE, withJsonObject { value =>
-        value.put("getNumPartitions()", wrap(rdd.getNumPartitions, "Int"))
-        value.put("name", wrap(rdd.name, "String"))
-        value.put("id", wrap(rdd.id, "Int"))
-        value.put("partitioner", wrap(rdd.partitioner.toString, "Option[org.apache.spark.Partitioner]"))
-        value.put("getStorageLevel()", wrap(rdd.getStorageLevel.toString, "org.apache.spark.storage.StorageLevel"))
+      json += (Names.VALUE -> withJsonObject { value =>
+        value += ("getNumPartitions()" -> wrap(rdd.getNumPartitions, "Int"))
+        value += ("name" -> wrap(rdd.name, "String"))
+        value += ("id" -> wrap(rdd.id, "Int"))
+        value += ("partitioner" -> wrap(rdd.partitioner.toString, "Option[org.apache.spark.Partitioner]"))
+        value += ("getStorageLevel()" -> wrap(rdd.getStorageLevel.toString, "org.apache.spark.storage.StorageLevel"))
       })
   }
 }

@@ -15,27 +15,28 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.codehaus.jettison.json.{JSONArray, JSONObject}
 import org.jetbrains.ztools.scala.core.Loopback
 
+import scala.collection.mutable
+
 class MapHandler(limit: Int) extends AbstractTypeHandler {
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject =
+  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] =
     withJsonObject {
       json =>
         val map = obj.asInstanceOf[Map[_, _]]
-        val keys = new JSONArray()
-        val values = new JSONArray()
-        json.put("jvm-type", obj.getClass.getCanonicalName)
-        json.put("length", map.size)
+        val keys = mutable.MutableList[Any]()
+        val values = mutable.MutableList[Any]()
+        json+=("jvm-type"-> obj.getClass.getCanonicalName)
+        json+=("length"-> map.size)
         var index = 0
         map.view.take(math.min(limit, map.size)).foreach {
           case (key, value) =>
-            keys.put(extract(loopback.pass(key, s"$id.key[$index]")))
-            values.put(extract(loopback.pass(value, s"$id.value[$index]")))
+            keys += extract(loopback.pass(key, s"$id.key[$index]"))
+            values += extract(loopback.pass(value, s"$id.value[$index]"))
         }
         index += 1
-        json.put("key", keys)
-        json.put("value", values)
+        json+=("key"-> keys)
+        json+=("value"-> values)
     }
 
   override def accept(obj: Any): Boolean = obj.isInstanceOf[Map[_, _]]

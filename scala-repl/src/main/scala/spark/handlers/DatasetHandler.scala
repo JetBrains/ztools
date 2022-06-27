@@ -16,25 +16,26 @@
 package spark.handlers
 
 import org.apache.spark.sql.Dataset
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.{Loopback, Names}
 import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
+
+import scala.collection.mutable
 
 class DatasetHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[Dataset[_]]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
+  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
     json =>
       val df = obj.asInstanceOf[Dataset[_]]
-      json.put(Names.VALUE, withJsonObject { json =>
-        json.put("schema()", wrap(withJsonArray {
+      json += (Names.VALUE -> withJsonObject { json =>
+        json += ("schema()" -> wrap(withJsonArray {
           schema =>
             df.schema.zipWithIndex.foreach {
               case (field, index) =>
-                schema.put(extract(loopback.pass(field, s"$id.schema()[${index}]")))
+                schema += (extract(loopback.pass(field, s"$id.schema()[${index}]")))
             }
         }, "org.apache.spark.sql.types.StructType"))
-        json.put("getStorageLevel()", wrap(df.storageLevel.toString(), "org.apache.spark.storage.StorageLevel"))
+        json += ("getStorageLevel()" -> wrap(df.storageLevel.toString(), "org.apache.spark.storage.StorageLevel"))
       })
   }
 }

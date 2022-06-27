@@ -15,11 +15,12 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.Loopback
+
+import scala.collection.mutable
 
 class NullHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj == null
 
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = new JSONObject()
+  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = mutable.Map[String, Any]()
 }

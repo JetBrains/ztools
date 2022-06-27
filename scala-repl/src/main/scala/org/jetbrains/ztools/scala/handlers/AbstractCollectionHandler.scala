@@ -15,8 +15,9 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.Loopback
+
+import scala.collection.mutable
 
 abstract class AbstractCollectionHandler(limit: Int) extends AbstractTypeHandler {
   trait Iterator {
@@ -29,15 +30,15 @@ abstract class AbstractCollectionHandler(limit: Int) extends AbstractTypeHandler
 
   def length(obj: Any): Int
 
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
+  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String,Any] = withJsonObject {
     json =>
-      json.put("jvm-type", obj.getClass.getCanonicalName)
-      json.put("length", length(obj))
-      json.put("value", withJsonArray { json =>
+      json+=("jvm-type"-> obj.getClass.getCanonicalName)
+      json+=("length"-> length(obj))
+      json+=("value"-> withJsonArray { json =>
         val it = iterator(obj)
         var index = 0
         while (it.hasNext && index < limit) {
-          json.put(extract(loopback.pass(it.next, s"$id[$index]")))
+          json+=(extract(loopback.pass(it.next, s"$id[$index]")))
           index += 1
         }
       })

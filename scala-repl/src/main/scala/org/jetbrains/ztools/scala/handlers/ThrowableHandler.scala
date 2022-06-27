@@ -15,20 +15,20 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.Loopback
 
 import java.io.{PrintWriter, StringWriter}
+import scala.collection.mutable
 
 class ThrowableHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[Throwable]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
+  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
     json =>
       val e = obj.asInstanceOf[Throwable]
       val writer = new StringWriter()
       val out = new PrintWriter(writer)
       e.printStackTrace(out)
-      json.put("value", writer.toString)
+      json+=("value"-> writer.toString)
   }
 }

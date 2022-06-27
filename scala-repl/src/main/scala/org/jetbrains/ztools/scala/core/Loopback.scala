@@ -29,8 +29,8 @@
  */
 package org.jetbrains.ztools.scala.core
 
-import org.codehaus.jettison.json.JSONObject
+import scala.collection.mutable
 
 trait Loopback {
-  def pass(obj: Any, id: String): JSONObject
+  def pass(obj: Any, id: String): mutable.Map[String, Any]
 }

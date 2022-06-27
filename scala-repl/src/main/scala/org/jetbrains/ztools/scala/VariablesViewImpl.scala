@@ -16,9 +16,10 @@
 package org.jetbrains.ztools.scala
 
 import org.apache.commons.lang.exception.ExceptionUtils
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.{Loopback, Names, TrieMap, TypeHandler}
 import org.jetbrains.ztools.scala.handlers._
+import org.json4s.jackson.Serialization
+import org.json4s.{Formats, NoTypeHints}
 import spark.handlers.{DatasetHandler, RDDHandler, SparkContextHandler, SparkSessionHandler}
 
 import java.util.function.{Function => JFunction}
@@ -43,9 +44,12 @@ abstract class VariablesViewImpl(val timeout: Int,
   class HandlerWrapper(val handler: TypeHandler) {
     def accept(info: ScalaVariableInfo): Boolean = info.isLazy || handler.accept(info.value)
 
-    def handle(info: ScalaVariableInfo, loopback: Loopback): JSONObject =
-      if (info.isLazy)
-        new JSONObject().put(Names.LAZY, true)
+    def handle(info: ScalaVariableInfo, loopback: Loopback): mutable.Map[String, Any] =
+      if (info.isLazy) {
+        val data = mutable.Map[String, Any]()
+        data += (Names.LAZY -> true)
+        data
+      }
       else
         handler.handle(info.value, info.path, loopback)
   }
@@ -145,52 +149,57 @@ abstract class VariablesViewImpl(val timeout: Int,
 
   def isHandlerRegistered[T <: TypeHandler](clazz: Class[T]): Boolean = handlerChain.exists(_.handler.getClass == clazz)
 
-  private def toJson(info: ScalaVariableInfo, depth: Int, path: String): JSONObject = {
+  private def toJson(info: ScalaVariableInfo, depth: Int, path: String): mutable.Map[String, Any] = {
     object MyAnyHandler extends AbstractTypeHandler {
       override def accept(obj: Any): Boolean = true
 
-      override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
+      override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
         result =>
           if (depth > 0) withJsonObject {
-            tree: JSONObject =>
+            tree: mutable.Map[String, Any] =>
               if (info.value != null)
                 listAccessibleProperties(info).foreach { field =>
                   touched(field.path) = field
                   if (field.ref != null && field.ref != field.path) {
-                    tree.put(field.name, new JSONObject().put(Names.REF, field.ref))
+                    tree += (field.name -> (mutable.Map[String, Any]() += (Names.REF -> field.ref)))
                   } else {
-                    tree.put(field.name, toJson(field, depth - 1, field.path))
+                    tree += (field.name -> toJson(field, depth - 1, field.path))
                   }
                 }
-              if (tree.length() != 0)
-                result.put(Names.VALUE, tree)
+              if (tree.nonEmpty)
+                result += (Names.VALUE -> tree)
               else
-                result.put(Names.VALUE, obj.toString.take(stringSizeLimit))
+                result += (Names.VALUE -> obj.toString.take(stringSizeLimit))
           } else {
-            result.put(Names.VALUE, obj.toString.take(stringSizeLimit))
+            result += (Names.VALUE -> obj.toString.take(stringSizeLimit))
           }
-          result.put(Names.JVM_TYPE, obj.getClass.getCanonicalName)
+          result += (Names.JVM_TYPE -> obj.getClass.getCanonicalName)
       }
     }
     val loopback = new Loopback {
-      override def pass(obj: Any, id: String): JSONObject = {
+      override def pass(obj: Any, id: String): mutable.Map[String, Any] = {
         val si = ScalaVariableInfo(isAccessible = true, isLazy = false, obj, null, id, getRef(obj, id))
         toJson(si, depth - 1, id)
       }
     }
     profile {
-      (handlerChain.find(_.accept(info)) match {
+      val res = handlerChain.find(_.accept(info)) match {
         case Some(handler) => handler.handle(info, loopback)
         case _ => MyAnyHandler.handle(info.value, path, loopback)
-      }).put(Names.TYPE, info.tpe)
+      }
+      if (info.tpe != null)
+        res += (Names.TYPE -> info.tpe)
+      res
     }
   }
 
   @inline
-  def profile(body: => JSONObject): JSONObject = {
+  def profile(body: => mutable.Map[String, Any]): mutable.Map[String, Any] = {
     if (enableProfiling) {
       val t = System.nanoTime()
-      body.put("time", System.nanoTime() - t)
+      val newBody: mutable.Map[String, Any] = body
+      newBody += ("time" -> (System.nanoTime() - t))
+      newBody
     } else body
   }
 
@@ -226,23 +235,28 @@ abstract class VariablesViewImpl(val timeout: Int,
     }.filter(_.isAccessible).toList
   }
 
-  def toFullJson: JSONObject = {
-    val result = new JSONObject()
-    result.put("variables", toJsonObject)
-
+  def toFullJson: String = {
     val errors = problems.map { case (name, refProblem) =>
       f"$name: Reflection error for ${refProblem.symbol} counted ${refProblem.count} times.\n" +
         f"${ExceptionUtils.getMessage(refProblem.e)}\n${ExceptionUtils.getStackTrace(refProblem.e)}"
     }.toList
 
-    result.put("errors", errors ++ this.errors.toList)
-    result
+    implicit val ztoolsFormats: AnyRef with Formats = Serialization.formats(NoTypeHints)
+    Serialization.write(
+      Map(
+        "variables" -> toJsonObject,
+        "errors" -> (errors ++ this.errors.toList)
+      )
+    )
   }
 
-  override def toJson: String = toJsonObject.toString(2)
+  override def toJson: String = {
+    implicit val ztoolsFormats: AnyRef with Formats = Serialization.formats(NoTypeHints)
+    Serialization.write(toJsonObject)
+  }
 
-  override def toJsonObject: JSONObject = {
-    val result = new JSONObject()
+  override def toJsonObject: mutable.Map[String, Any] = {
+    val result = mutable.Map[String, Any]()
     variables()
       .filter { name => !blackList.contains(name) }
       .filter { name => whiteList == null || whiteList.contains(name) }
@@ -257,10 +271,11 @@ abstract class VariablesViewImpl(val timeout: Int,
           if (!(filterUnitResults && isUnitResult(info))) {
             touched(info.path) = info
             if (ref != null && ref != info.path) {
-              result.put(info.path, new JSONObject().put(Names.REF, ref))
+              result += (info.path -> (mutable.Map[String, Any]() += (Names.REF -> ref)))
             } else {
-              result.put(info.path, toJson(info, depth, info.path))
+              result += info.path -> toJson(info, depth, info.path)
             }
+            result
           }
         } catch {
           case t: Throwable => errors +=
@@ -273,15 +288,15 @@ abstract class VariablesViewImpl(val timeout: Int,
   private def isUnitResult(info: ScalaVariableInfo): Boolean =
     info.name.length > 3 && info.name.startsWith("res") && info.name(3).isDigit && info.tpe == "Unit"
 
-  override def toJsonObject(path: String, deep: Int): JSONObject = {
-    val result = new JSONObject()
+  override def toJsonObject(path: String, deep: Int): mutable.Map[String, Any] = {
+    val result = mutable.Map[String, Any]()
     val obj = touched(path)
     if (obj.ref != null) {
-      result.put("path", path)
-      result.put(Names.VALUE, new JSONObject().put(Names.REF, obj.ref))
+      result += ("path" -> path)
+      result += (Names.VALUE -> mutable.Map[String, Any]()) += (Names.REF -> obj.ref)
     } else {
-      result.put("path", path)
-      result.put(Names.VALUE, toJson(obj, depth, path))
+      result += ("path" -> path)
+      result += (Names.VALUE -> toJson(obj, depth, path))
     }
     result
   }

@@ -15,16 +15,17 @@
  */
 package org.jetbrains.ztools.scala.handlers
 
-import org.codehaus.jettison.json.JSONObject
 import org.jetbrains.ztools.scala.core.Loopback
+
+import scala.collection.mutable
 
 class StringHandler(limit: Int) extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[String]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): JSONObject = withJsonObject {
+  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
     json =>
       val str = obj.asInstanceOf[String]
-      json.put("value", str.take(limit))
+      json+=("value"-> str.take(limit))
   }
 }
 

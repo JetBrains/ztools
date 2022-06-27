@@ -29,10 +29,10 @@
  */
 package org.jetbrains.ztools.scala.core
 
-import org.codehaus.jettison.json.JSONObject
+import scala.collection.mutable
 
 trait TypeHandler {
   def accept(obj: Any): Boolean
 
-  def handle(obj: Any, id: String, loopback: Loopback): JSONObject
+  def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any]
 }

@@ -1,5 +1,7 @@
 import org.apache.commons.lang.exception.ExceptionUtils
-import org.codehaus.jettison.json.JSONObject
+import org.json4s.jackson.Serialization
+import org.json4s.{Formats, NoTypeHints}
+
 
 try {
   import org.jetbrains.ztools.scala.{VariablesViewImpl, ZtoolsInterpreterWrapper}
@@ -38,7 +40,7 @@ try {
       override def typeOfExpression(id: String): String = iMain.typeOfExpression(id, silent = true).toString()
     }
 
-    variableView.toFullJson.toString(2)
+    variableView.toFullJson
   }
 
   val variablesJson = getVariables
@@ -47,10 +49,13 @@ try {
   println("--ztools-scala")
 } catch {
   case t: Throwable =>
-    val result = new JSONObject()
-    val errors = Array[String](f"${ExceptionUtils.getMessage(t)}\n${ExceptionUtils.getStackTrace(t)}")
-    result.put("errors", errors)
-    result
+    implicit val ztoolsFormats: AnyRef with Formats = Serialization.formats(NoTypeHints)
+    val result = Map(
+      "errors" -> Array(f"${ExceptionUtils.getMessage(t)}\n${ExceptionUtils.getStackTrace(t)}")
+    )
+    println("--ztools-scala")
+    println(Serialization.write(result))
+    println("--ztools-scala")
 }
 
 
