@@ -28,6 +28,7 @@ import scala.language.implicitConversions
 abstract class VariablesViewImpl(val collectionSizeLimit: Int,
                                  val stringSizeLimit: Int,
                                  val blackList: List[String],
+                                 val whiteList: List[String] = null,
                                  val filterUnitResults: Boolean,
                                  val enableProfiling: Boolean,
                                  val depth: Int) extends VariablesView {
@@ -234,7 +235,10 @@ abstract class VariablesViewImpl(val collectionSizeLimit: Int,
 
   override def toJsonObject: JSONObject = {
     val result = new JSONObject()
-    variables().filter { name => !blackList.contains(name) }.foreach { name =>
+    variables()
+      .filter { name => !blackList.contains(name) }
+      .filter { name => whiteList == null ||  whiteList.contains(name) }
+      .foreach { name =>
       try {
         val info = getInfo(name)
         val ref = getRef(info.value, name)

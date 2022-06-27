@@ -14,6 +14,7 @@ try {
   val collectionSizeLimit = 100
   val stringSizeLimit = 400
   val blackList = "$intp,sc,spark,sqlContext,z,engine".split(',').toList
+  val whiteList: Option[List[String]] = Option(null)
 
 
   def getVariables: String = {
@@ -22,6 +23,7 @@ try {
       collectionSizeLimit = collectionSizeLimit,
       stringSizeLimit = stringSizeLimit,
       blackList = blackList,
+      whiteList = whiteList.orNull,
       filterUnitResults = filterUnitResults,
       enableProfiling = enableProfiling,
       depth = depth) {
