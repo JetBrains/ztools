@@ -34,7 +34,7 @@ import scala.collection.mutable
 
 object TrieMap {
   class Node[T](var value: Option[T]) {
-    private[core] var children: mutable.Map[String, TrieMap.Node[T]] = _
+    var children: mutable.Map[String, TrieMap.Node[T]] = _
 
     def put(key: String, node: TrieMap.Node[T]): Option[Node[T]] = {
       if (children == null)
@@ -75,7 +75,7 @@ object TrieMap {
 }
 
 class TrieMap[T] {
-  private[core] val root = new TrieMap.Node[T](null)
+  val root = new TrieMap.Node[T](null)
 
   def subtree(key: Array[String], length: Int): TrieMap.Node[T] = {
     var current = root

@@ -15,8 +15,6 @@
  */
 package org.jetbrains.ztools.scala
 
-import org.jetbrains.ztools.scala.core.TypeHandler
-
 import scala.collection.mutable
 
 trait VariablesView {
@@ -31,8 +29,6 @@ trait VariablesView {
   def variables(): List[String]
 
   def valueOfTerm(id: String): Option[Any]
-
-  def registerTypeHandler(handler: TypeHandler): VariablesView
 
   def typeOfExpression(id: String): String
 }

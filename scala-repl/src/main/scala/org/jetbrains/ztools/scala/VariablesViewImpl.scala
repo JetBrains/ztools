@@ -141,14 +141,7 @@ abstract class VariablesViewImpl(val timeout: Int,
     val obj = valueOfTerm(name).orNull
     ScalaVariableInfo(isAccessible = true, isLazy = false, obj, typeOfTerm(obj, name), name, null)
   }
-
-  def registerTypeHandler(handler: TypeHandler): VariablesView = {
-    if (!isHandlerRegistered(handler.getClass)) handlerChain.insert(1, new HandlerWrapper(handler))
-    this
-  }
-
-  def isHandlerRegistered[T <: TypeHandler](clazz: Class[T]): Boolean = handlerChain.exists(_.handler.getClass == clazz)
-
+  
   private def toJson(info: ScalaVariableInfo, depth: Int, path: String): mutable.Map[String, Any] = {
     object MyAnyHandler extends AbstractTypeHandler {
       override def accept(obj: Any): Boolean = true
