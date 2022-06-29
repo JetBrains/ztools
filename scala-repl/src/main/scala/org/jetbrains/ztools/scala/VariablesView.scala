@@ -72,11 +72,21 @@ class VariablesView(val intp: IMain,
   }
 
   def resolveVariables: mutable.Map[String, Any] = {
-    val result = mutable.Map[String, Any]()
+    val result: mutable.Map[String, Any] = mutable.Map[String, Any]()
     val startTime = System.currentTimeMillis()
 
     val interpreterVariablesNames = interpreterHandler.getVariableNames
     val finalNames = filterVariableNames(interpreterVariablesNames)
+
+    finalNames.foreach { name =>
+      val varType = interpreterHandler.interpreter.typeOfTerm(name).toString().stripPrefix("()")
+      val variable = mutable.Map[String, Any]()
+
+      result += name -> variable
+      variable += ResNames.TYPE -> varType
+      if (!isUnitOrNullResult(result, name))
+        variable += ResNames.VALUE -> "<Not calculated>"
+    }
 
     var passedVariablesCount = 0
     val totalVariablesCount = finalNames.size
@@ -87,25 +97,42 @@ class VariablesView(val intp: IMain,
     finalNames.foreach { name =>
       if (checkTimeout(startTime, passedVariablesCount, totalVariablesCount))
         return result
-
       passedVariablesCount += 1
 
-      try {
-        val info = interpreterHandler.getInfo(name)
-        val ref = referenceManager.getRef(info.value, name)
-        touched(info.path) = info
+      if (!isUnitOrNullResult(result, name)) {
 
-        if (ref != null && ref != info.path) {
-          result += (info.path -> mutable.Map[String, Any](ResNames.REF -> ref))
-        } else {
-          result += info.path -> parseInfo(info, depth)
-        }
-      } catch {
-        case t: Throwable => errors +=
-          f"${ExceptionUtils.getRootCauseMessage(t)}\n${ExceptionUtils.getStackTrace(t)}"
+        calculateVariable(result, name)
       }
     }
     result
+  }
+
+  private def calculateVariable(result: mutable.Map[String, Any], name: String) = {
+    val valMap = result(name).asInstanceOf[mutable.Map[String, Any]]
+    try {
+      val startTime = System.currentTimeMillis()
+
+      val info = interpreterHandler.getInfo(name, valMap(ResNames.TYPE).asInstanceOf[String])
+      val ref = referenceManager.getRef(info.value, name)
+      touched(info.path) = info
+
+      if (ref != null && ref != info.path) {
+        result += (info.path -> mutable.Map[String, Any](ResNames.REF -> ref))
+      } else {
+        result += info.path -> parseInfo(info, depth, startTime)
+      }
+    } catch {
+      case t: Throwable =>
+        val error = f"${ExceptionUtils.getRootCauseMessage(t)}\n${ExceptionUtils.getStackTrace(t)}"
+        valMap += ResNames.VALUE -> ExceptionUtils.getRootCauseMessage(t)
+        errors += error
+    }
+  }
+
+  private def isUnitOrNullResult(result: mutable.Map[String, Any], name: String) = {
+    val res = result(name).asInstanceOf[mutable.Map[String, Any]]
+    val valType = res(ResNames.TYPE)
+    valType == "Unit" || valType == "Null"
   }
 
   def resolveVariable(path: String): mutable.Map[String, Any] = {
@@ -119,14 +146,14 @@ class VariablesView(val intp: IMain,
     result
   }
 
-  private def parseInfo(info: ScalaVariableInfo, depth: Int): Any = {
+  private def parseInfo(info: ScalaVariableInfo, depth: Int, startTime: Long = System.currentTimeMillis()): Any = {
     val loopback = new Loopback {
       override def pass(obj: Any, id: String): Any = {
         val si = ScalaVariableInfo(isAccessible = true, isLazy = false, obj, null, id, referenceManager.getRef(obj, id))
         parseInfo(si, depth - 1)
       }
     }
-    handlerManager.handleVariable(info, loopback, depth)
+    handlerManager.handleVariable(info, loopback, depth, startTime)
   }
 
   private def filterVariableNames(interpreterVariablesNames: Seq[String]) = {

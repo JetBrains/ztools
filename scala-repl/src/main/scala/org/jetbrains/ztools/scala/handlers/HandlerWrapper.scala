@@ -8,8 +8,11 @@ import scala.collection.mutable
 class HandlerWrapper(val handler: TypeHandler, profile: Boolean) {
   def accept(info: ScalaVariableInfo): Boolean = info.isLazy || handler.accept(info.value)
 
-  def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int): Any = {
-    val startTime = System.currentTimeMillis()
+  def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int, initStartTime: Long): Any = {
+    val startTime = if (initStartTime!=null)
+      initStartTime
+    else
+      System.currentTimeMillis()
 
     val data = if (scalaInfo.isLazy) {
       mutable.Map[String, Any](ResNames.LAZY -> true)

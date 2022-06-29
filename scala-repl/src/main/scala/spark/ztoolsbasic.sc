@@ -1,3 +1,6 @@
+import org.json4s.{Formats, NoTypeHints}
+import org.json4s.jackson.Serialization
+
 try {
   import org.jetbrains.ztools.scala.VariablesView
 
@@ -7,16 +10,16 @@ try {
   /**
    * Main section
    */
-  val iMain: IMain = null
+  val iMain: IMain = $intp
   val depth: Int = 0
   val filterUnitResults: Boolean = true
-  val enableProfiling: Boolean = false
+  val enableProfiling: Boolean = true
   val collectionSizeLimit = 100
   val stringSizeLimit = 400
   val timeout = 5000
   val variableTimeout = 2000
   val interpreterResCountLimit = 5
-  val blackList = "$intp,sc,spark,sqlContext,z,engine".split(',').toList
+  val blackList = "$intp,z,engine".split(',').toList
   val whiteList: List[String] = null
 
 
@@ -33,7 +36,7 @@ try {
     depth = depth,
     interpreterResCountLimit = interpreterResCountLimit
   )
-
+  implicit val ztoolsFormats: AnyRef with Formats = Serialization.formats(NoTypeHints)
   val variablesJson = variableView.getZtoolsJsonResult
   println("--ztools-scala--")
   println(variablesJson)
@@ -50,7 +53,7 @@ catch {
       "errors" -> Array(f"${ExceptionUtils.getMessage(t)}\n${ExceptionUtils.getStackTrace(t)}")
     ))
     println("--ztools-scala--")
-    println(Serialization.write(result))
+    println(result)
     println("--ztools-scala--")
 }
 

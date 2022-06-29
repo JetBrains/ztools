@@ -49,7 +49,7 @@ class SparkHandlersTest extends ReplAware {
         """)
         val json = view.resolveVariables
         println(view.toJson)
-        assertEquals("org.apache.spark.rdd.RDD[(Int, String)]", getInPath[String](json, "rdd.type"))
+        assertEquals("org.apache.spark.rdd.RDD", getInPath[String](json, "rdd.type"))
         assertEquals("Int", getInPath[Int](json, "rdd.value.id.type"))
         assertEquals("Int", getInPath[Int](json, "rdd.value.getNumPartitions().type"))
         assertEquals("org.apache.spark.storage.StorageLevel", getInPath[String](json, "rdd.value.getStorageLevel().type"))
@@ -120,7 +120,7 @@ class SparkHandlersTest extends ReplAware {
         val rdd = sc.textFile("file:///home/nikita.pavlenko/big-data/online_retail.csv")
         """)
       val json = view.toJson
-      assertEquals("{}", json)
+      assertEquals("{\"rdd\":{\"type\":\"org.apache.spark.rdd.RDD\",\"value\":\"NoSuchMethodException: org.apache.spark.io.LZ4CompressionCodec.<init>(org.apache.spark.SparkConf)\"}}", json)
   }
 
   private def checkStructField(field: Any,
@@ -144,7 +144,7 @@ class SparkHandlersTest extends ReplAware {
     spark = SparkSession
       .builder()
       .master("local[2]")
-      .appName("Simple Application3").getOrCreate()
+      .appName("Simple Application").getOrCreate()
   }
 
   override def afterRepl(): Unit = {

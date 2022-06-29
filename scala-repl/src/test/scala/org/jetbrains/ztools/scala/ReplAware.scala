@@ -44,13 +44,13 @@ class ReplAware {
     def env(depth: Int, isProfilingEnabled: Boolean): VariablesView = new VariablesView(
       intp = iLoop.intp,
       collectionSizeLimit = 100,
-      variableTimeout = 10000,
+      variableTimeout = 100000,
       stringSizeLimit = 400,
       blackList = "$intp,sc,spark,sqlContext,z,engine".split(",").toList,
       filterUnitResults = true,
       enableProfiling = isProfilingEnabled,
       depth = depth,
-      timeout = 10000)
+      timeout = 100000)
 
 
     val result = body(new Repl {

@@ -35,7 +35,8 @@ class ObjectHandler(val stringSizeLimit: Int,
         return result
       }
 
-      val fields = listAccessibleProperties(scalaInfo)
+      val startTime = System.currentTimeMillis()
+      val fields = listAccessibleProperties(scalaInfo, startTime)
       if (fields.isEmpty) {
         result += (ResNames.VALUE -> obj.toString.take(stringSizeLimit))
         return result
@@ -44,7 +45,6 @@ class ObjectHandler(val stringSizeLimit: Int,
       val resolvedFields = mutable.Map[String, Any]()
       result += (ResNames.VALUE -> resolvedFields)
 
-      val startTime = System.currentTimeMillis()
 
       fields.foreach { field =>
         if (checkTimeoutError(field.name, startTime, timeout)) {
@@ -67,13 +67,21 @@ class ObjectHandler(val stringSizeLimit: Int,
       f"Error message: ${ExceptionUtils.getMessage(x._2.e)}\n " +
       f"Stacktrace:${ExceptionUtils.getStackTrace(x._2.e)}").toList ++ super.getErrors
 
-  private def listAccessibleProperties(info: ScalaVariableInfo): List[ScalaVariableInfo] = {
+  private def listAccessibleProperties(info: ScalaVariableInfo, startTime: Long): List[ScalaVariableInfo] = {
     val instanceMirror = mirror.reflect(info.value)
     val instanceSymbol = instanceMirror.symbol
     val members = instanceSymbol.toType.members
-    members.map {
-      symbol => get(instanceMirror, symbol, info.path)
-    }.filter(_.isAccessible).toList
+
+    val parsedMembers = mutable.MutableList[ScalaVariableInfo]()
+    members.foreach { symbol =>
+      if (checkTimeoutError(info.path, startTime, timeout))
+        return parsedMembers.toList
+      val variableInfo = get(instanceMirror, symbol, info.path)
+      if (variableInfo.isAccessible)
+        parsedMembers += variableInfo
+    }
+
+    parsedMembers.toList
   }
 
   private def get(instanceMirror: ru.InstanceMirror, symbol: ru.Symbol, path: String): ScalaVariableInfo = {

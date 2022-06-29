@@ -29,12 +29,12 @@ class HandlerManager(enableProfiling: Boolean,
     new RDDHandler(),
     new SparkContextHandler(),
     new SparkSessionHandler(),
-    new ObjectHandler(stringSizeLimit, this, referenceManager,timeout)
+    new ObjectHandler(stringSizeLimit, this, referenceManager, timeout)
   ).map(new HandlerWrapper(_, enableProfiling))
 
   def getErrors: mutable.Seq[String] = handlerChain.flatMap(x => x.handler.getErrors)
 
-  def handleVariable(info: ScalaVariableInfo, loopback: Loopback, depth: Int): Any = {
-    handlerChain.find(_.accept(info)).map(_.handle(info, loopback, depth)).getOrElse(mutable.Map[String, Any]())
+  def handleVariable(info: ScalaVariableInfo, loopback: Loopback, depth: Int, startTime: Long = System.currentTimeMillis()): Any = {
+    handlerChain.find(_.accept(info)).map(_.handle(info, loopback, depth, startTime)).getOrElse(mutable.Map[String, Any]())
   }
 }
