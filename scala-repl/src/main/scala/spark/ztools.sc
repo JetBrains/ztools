@@ -97,7 +97,7 @@ try {
       node != null
     }
 
-    def get(key: String): Option[T]= {
+    def get(key: String): Option[T] = {
       val k = TrieMap.split(key)
       val node = subtree(k, k.length)
       if (node == null) return Option.empty
@@ -454,7 +454,7 @@ try {
     def accept(info: ScalaVariableInfo): Boolean = info.isLazy || handler.accept(info.value)
 
     def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int, initStartTime: Long): Any = {
-      val startTime = if (initStartTime!=null)
+      val startTime = if (initStartTime != null)
         initStartTime
       else
         System.currentTimeMillis()
@@ -515,7 +515,6 @@ try {
 
   import scala.language.implicitConversions
   import scala.reflect.runtime.{universe => ru}
-  import scala.tools.nsc.interpreter.IMain
 
   //noinspection TypeAnnotation
   class ZtoolsInterpreterWrapper(val iMain: IMain) {
@@ -633,13 +632,11 @@ try {
   }
 
 
-  import org.apache.commons.lang.exception.ExceptionUtils
   import org.json4s.jackson.Serialization
   import org.json4s.{Formats, NoTypeHints}
 
   import java.util.function.{Function => JFunction}
   import java.util.regex.Pattern
-  import scala.collection.{immutable, mutable}
   import scala.language.implicitConversions
   import scala.util.Try
 
@@ -736,9 +733,9 @@ try {
         }
       } catch {
         case t: Throwable =>
-          val error = f"${ExceptionUtils.getRootCauseMessage(t)}\n${ExceptionUtils.getStackTrace(t)}"
+          val error = f"${ExceptionUtils.getRootCauseMessage(t)}\n${ExceptionUtils.getStackTrace(t)}".take(1000)
           valMap += ResNames.VALUE -> ExceptionUtils.getRootCauseMessage(t)
-          errors += error
+          errors += f"Parse $name variable exception.\n" + error
       }
     }
 
