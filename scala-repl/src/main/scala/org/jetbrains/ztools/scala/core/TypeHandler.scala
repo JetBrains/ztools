@@ -37,4 +37,6 @@ trait TypeHandler {
   def accept(obj: Any): Boolean
 
   def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any]
+
+  def getErrors: List[String] = List[String]()
 }

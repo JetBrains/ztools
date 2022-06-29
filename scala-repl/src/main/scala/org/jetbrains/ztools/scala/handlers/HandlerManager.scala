@@ -9,7 +9,8 @@ import spark.handlers.{DatasetHandler, RDDHandler, SparkContextHandler, SparkSes
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class HandlerManager(timeout: Int,
+class HandlerManager(enableProfiling: Boolean,
+                     timeout: Int,
                      stringSizeLimit: Int,
                      collectionSizeLimit: Int,
                      referenceManager: ReferenceManager) {
@@ -28,7 +29,9 @@ class HandlerManager(timeout: Int,
     new SparkContextHandler(),
     new SparkSessionHandler(),
     new ObjectHandler(stringSizeLimit, this, referenceManager)
-  ).map(new HandlerWrapper(_))
+  ).map(new HandlerWrapper(_, enableProfiling))
+
+  def getErrors: mutable.Seq[String] = handlerChain.flatMap(x => x.handler.getErrors)
 
   def handleVariable(info: ScalaVariableInfo, loopback: Loopback, depth: Int): Any = {
     handlerChain.find(_.accept(info)).map(_.handle(info, loopback, depth)).getOrElse(mutable.Map[String, Any]())

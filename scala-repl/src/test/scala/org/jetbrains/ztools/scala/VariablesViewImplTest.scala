@@ -295,7 +295,7 @@ class VariablesViewImplTest extends ReplAware {
       println(env.toJson)
       assertTrue(getInPath[String](j, "a.value").startsWith("$line1.$"))
       //      println(env.toJsonObject.toString(2))
-      val json = env.resolveVariable("b", 2)
+      val json = env.resolveVariable("b")
       //      // {"path":"b.a","value":{"type":"Line_1.A","value":{"id":{"type":"kotlin.Int","value":"10"}}}}
       //      println(json.toString(2))
       assertEquals(1, json.keys.size) // path & value

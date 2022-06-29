@@ -35,7 +35,6 @@ object ResNames {
   val IS_PRIMITIVE = "isPrimitive"
   val TYPE = "type"
   val TIME = "time"
-  val PATH = "path"
   val LENGTH = "length"
   val LAZY = "lazy"
 }

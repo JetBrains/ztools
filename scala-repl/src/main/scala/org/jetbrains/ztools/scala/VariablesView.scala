@@ -32,6 +32,7 @@ import scala.util.Try
 
 class VariablesView(val intp: IMain,
                     val timeout: Int,
+                    val variableTimeout: Int,
                     val collectionSizeLimit: Int,
                     val stringSizeLimit: Int,
                     val blackList: List[String],
@@ -40,7 +41,7 @@ class VariablesView(val intp: IMain,
                     val enableProfiling: Boolean,
                     val depth: Int,
                     val interpreterResCountLimit: Int = 5) {
-  val errors = mutable.MutableList[String]()
+  val errors: mutable.MutableList[String] = mutable.MutableList[String]()
   private val interpreterHandler = new InterpreterHandler(intp)
   private val referenceManager = new ReferenceManager()
 
@@ -49,8 +50,9 @@ class VariablesView(val intp: IMain,
   private val handlerManager = new HandlerManager(
     collectionSizeLimit = collectionSizeLimit,
     stringSizeLimit = stringSizeLimit,
-    timeout = 2000,
-    referenceManager = referenceManager
+    timeout = variableTimeout,
+    referenceManager = referenceManager,
+    enableProfiling = enableProfiling
   )
 
   //noinspection ScalaUnusedSymbol
@@ -59,7 +61,7 @@ class VariablesView(val intp: IMain,
     Serialization.write(
       Map(
         "variables" -> resolveVariables,
-        "errors" -> errors.toList
+        "errors" -> (errors ++ handlerManager.getErrors)
       )
     )
   }
@@ -106,7 +108,7 @@ class VariablesView(val intp: IMain,
     result
   }
 
-  def resolveVariable(path: String, deep: Int): mutable.Map[String, Any] = {
+  def resolveVariable(path: String): mutable.Map[String, Any] = {
     val result = mutable.Map[String, Any]()
     val obj = touched.get(path).orNull
     if (obj.ref != null) {
@@ -124,9 +126,7 @@ class VariablesView(val intp: IMain,
         parseInfo(si, depth - 1)
       }
     }
-    profile {
-      handlerManager.handleVariable(info, loopback, depth)
-    }
+    handlerManager.handleVariable(info, loopback, depth)
   }
 
   private def filterVariableNames(interpreterVariablesNames: Seq[String]) = {
@@ -152,21 +152,6 @@ class VariablesView(val intp: IMain,
   //noinspection ScalaUnusedSymbol
   private implicit def toJavaFunction[A, B](f: A => B): JFunction[A, B] = new JFunction[A, B] {
     override def apply(a: A): B = f(a)
-  }
-
-
-  @inline
-  def profile(body: => Any): Any = {
-    if (enableProfiling) {
-      val t = System.nanoTime()
-      val newBody = body
-      newBody match {
-        case map: mutable.Map[String, Any] => map += (ResNames.TIME -> (System.currentTimeMillis() - t))
-        case _ =>
-      }
-      newBody
-    } else
-      body
   }
 
   private def checkTimeout(startTimeout: Long, passed: Int, total: Int): Boolean = {

@@ -1,5 +1,6 @@
 package org.jetbrains.ztools.scala.handlers.impls
 
+import org.apache.commons.lang.exception.ExceptionUtils
 import org.jetbrains.ztools.scala.core.{Loopback, ResNames}
 import org.jetbrains.ztools.scala.handlers.HandlerManager
 import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
@@ -48,6 +49,12 @@ class ObjectHandler(val stringSizeLimit: Int,
       else
         result += (ResNames.VALUE -> obj.toString.take(stringSizeLimit))
     }
+
+
+  override def getErrors: List[String] = problems.map(x =>
+    f"Reflection error for ${x._2.symbol} counted ${x._2.count}.\n" +
+      f"Error message: ${ExceptionUtils.getMessage(x._2.e)}\n " +
+      f"Stacktrace:${ExceptionUtils.getStackTrace(x._2.e)}").toList
 
   private def listAccessibleProperties(info: ScalaVariableInfo): List[ScalaVariableInfo] = {
     val instanceMirror = mirror.reflect(info.value)

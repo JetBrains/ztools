@@ -14,6 +14,7 @@ try {
   val collectionSizeLimit = 100
   val stringSizeLimit = 400
   val timeout = 5000
+  val variableTimeout = 2000
   val interpreterResCountLimit = 5
   val blackList = "$intp,sc,spark,sqlContext,z,engine".split(',').toList
   val whiteList: List[String] = null
@@ -22,6 +23,7 @@ try {
   val variableView = new VariablesView(
     intp = iMain,
     timeout = timeout,
+    variableTimeout = variableTimeout,
     collectionSizeLimit = collectionSizeLimit,
     stringSizeLimit = stringSizeLimit,
     blackList = blackList,
