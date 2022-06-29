@@ -15,7 +15,7 @@
  */
 package org.jetbrains.ztools.scala.handlers.impls
 
-class ArrayHandler(limit: Int) extends AbstractCollectionHandler(limit) {
+class ArrayHandler(limit: Int, timeout: Int) extends AbstractCollectionHandler(limit, timeout) {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[Array[_]]
 
   override def length(obj: Any): Int = obj.asInstanceOf[Array[_]].length

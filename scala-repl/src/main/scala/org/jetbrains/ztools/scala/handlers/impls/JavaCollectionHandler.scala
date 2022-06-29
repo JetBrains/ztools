@@ -17,7 +17,7 @@ package org.jetbrains.ztools.scala.handlers.impls
 
 import java.util
 
-class JavaCollectionHandler(limit: Int) extends AbstractCollectionHandler(limit) {
+class JavaCollectionHandler(limit: Int,timeout: Int) extends AbstractCollectionHandler(limit, timeout) {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[util.Collection[_]]
 
   override def iterator(obj: Any): Iterator = new Iterator() {

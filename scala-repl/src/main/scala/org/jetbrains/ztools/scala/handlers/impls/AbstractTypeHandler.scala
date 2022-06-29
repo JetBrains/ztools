@@ -20,6 +20,10 @@ import org.jetbrains.ztools.scala.core.{ResNames, TypeHandler}
 import scala.collection.mutable
 
 abstract class AbstractTypeHandler extends TypeHandler {
+  val timeoutErrors: mutable.MutableList[String] = mutable.MutableList()
+
+  override def getErrors: List[String] = timeoutErrors.toList
+
   protected def withJsonArray(body: mutable.MutableList[Any] => Unit): mutable.MutableList[Any] = {
     val arr = mutable.MutableList[Any]()
     body(arr)
@@ -36,4 +40,12 @@ abstract class AbstractTypeHandler extends TypeHandler {
     ResNames.VALUE -> Option(obj).orNull,
     ResNames.TYPE -> tpe
   )
+
+  protected def checkTimeoutError(name: String, startTime: Long, timeout: Int): Boolean = {
+    val isTimeout = System.currentTimeMillis() - startTime > timeout
+    if (isTimeout)
+      timeoutErrors += f"Variable $name collect timeout exceed ${timeout}ms."
+    isTimeout
+  }
+
 }

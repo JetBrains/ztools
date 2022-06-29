@@ -18,9 +18,9 @@ package org.jetbrains.ztools.scala.handlers.impls
 import org.jetbrains.ztools.scala.core.{Loopback, ResNames}
 import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
-import scala.collection.mutable
+import scala.collection.{breakOut, mutable}
 
-abstract class AbstractCollectionHandler(limit: Int) extends AbstractTypeHandler {
+abstract class AbstractCollectionHandler(limit: Int, timeout: Int) extends AbstractTypeHandler {
   trait Iterator {
     def hasNext: Boolean
 
@@ -31,12 +31,13 @@ abstract class AbstractCollectionHandler(limit: Int) extends AbstractTypeHandler
 
   def length(obj: Any): Int
 
-  override def handle(scalaInfo:  ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] = mutable.Map[String, Any](
+  override def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] = mutable.Map[String, Any](
     ResNames.LENGTH -> length(scalaInfo.value),
     ResNames.VALUE -> withJsonArray { json =>
+      val startTime = System.currentTimeMillis()
       val it = iterator(scalaInfo.value)
       var index = 0
-      while (it.hasNext && index < limit) {
+      while (it.hasNext && index < limit && !checkTimeoutError(scalaInfo.path, startTime, timeout)) {
         val id = scalaInfo.path
         json += loopback.pass(it.next, s"$id[$index]")
         index += 1

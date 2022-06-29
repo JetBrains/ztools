@@ -20,8 +20,8 @@ import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
 import scala.collection.mutable
 
-class MapHandler(limit: Int) extends AbstractTypeHandler {
-  override def handle(scalaInfo:  ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] =
+class MapHandler(limit: Int, timeout: Int) extends AbstractTypeHandler {
+  override def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] =
     withJsonObject {
       json =>
         val obj = scalaInfo.value
@@ -29,17 +29,22 @@ class MapHandler(limit: Int) extends AbstractTypeHandler {
         val map = obj.asInstanceOf[Map[_, _]]
         val keys = mutable.MutableList[Any]()
         val values = mutable.MutableList[Any]()
-        json+=("jvm-type"-> obj.getClass.getCanonicalName)
-        json+=("length"-> map.size)
+        json += ("jvm-type" -> obj.getClass.getCanonicalName)
+        json += ("length" -> map.size)
         var index = 0
+
+        json += ("key" -> keys)
+        json += ("value" -> values)
+
+        val startTime = System.currentTimeMillis()
         map.view.take(math.min(limit, map.size)).foreach {
           case (key, value) =>
+            if (checkTimeoutError(scalaInfo.path, startTime, timeout))
+              return json
             keys += loopback.pass(key, s"$id.key[$index]")
             values += loopback.pass(value, s"$id.value[$index]")
+            index += 1
         }
-        index += 1
-        json+=("key"-> keys)
-        json+=("value"-> values)
     }
 
   override def accept(obj: Any): Boolean = obj.isInstanceOf[Map[_, _]]

@@ -15,7 +15,7 @@
  */
 package org.jetbrains.ztools.scala.handlers.impls
 
-class SetHandler(limit: Int) extends AbstractCollectionHandler(limit) {
+class SetHandler(limit: Int,timeout: Int) extends AbstractCollectionHandler(limit,timeout) {
   override def iterator(obj: Any): Iterator = new Iterator {
     private val it = obj.asInstanceOf[Set[_]].iterator
 

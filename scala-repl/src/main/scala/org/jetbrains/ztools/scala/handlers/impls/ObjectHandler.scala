@@ -11,7 +11,8 @@ import scala.reflect.api.JavaUniverse
 
 class ObjectHandler(val stringSizeLimit: Int,
                     val manager: HandlerManager,
-                    val referenceManager: ReferenceManager) extends AbstractTypeHandler {
+                    val referenceManager: ReferenceManager,
+                    val timeout: Int) extends AbstractTypeHandler {
   private val INACCESSIBLE = ScalaVariableInfo(isAccessible = false, isLazy = false, null, null, null, null)
   val ru: JavaUniverse = scala.reflect.runtime.universe
   val mirror: ru.Mirror = ru.runtimeMirror(getClass.getClassLoader)
@@ -35,8 +36,21 @@ class ObjectHandler(val stringSizeLimit: Int,
       }
 
       val fields = listAccessibleProperties(scalaInfo)
+      if (fields.isEmpty) {
+        result += (ResNames.VALUE -> obj.toString.take(stringSizeLimit))
+        return result
+      }
+
       val resolvedFields = mutable.Map[String, Any]()
+      result += (ResNames.VALUE -> resolvedFields)
+
+      val startTime = System.currentTimeMillis()
+
       fields.foreach { field =>
+        if (checkTimeoutError(field.name, startTime, timeout)) {
+          return result
+        }
+
         if (field.ref != null && field.ref != field.path) {
           resolvedFields += (field.name -> (mutable.Map[String, Any]() += (ResNames.REF -> field.ref)))
         } else {
@@ -44,17 +58,14 @@ class ObjectHandler(val stringSizeLimit: Int,
         }
       }
 
-      if (resolvedFields.nonEmpty)
-        result += (ResNames.VALUE -> resolvedFields)
-      else
-        result += (ResNames.VALUE -> obj.toString.take(stringSizeLimit))
+      result
     }
 
 
   override def getErrors: List[String] = problems.map(x =>
     f"Reflection error for ${x._2.symbol} counted ${x._2.count}.\n" +
       f"Error message: ${ExceptionUtils.getMessage(x._2.e)}\n " +
-      f"Stacktrace:${ExceptionUtils.getStackTrace(x._2.e)}").toList
+      f"Stacktrace:${ExceptionUtils.getStackTrace(x._2.e)}").toList ++ super.getErrors
 
   private def listAccessibleProperties(info: ScalaVariableInfo): List[ScalaVariableInfo] = {
     val instanceMirror = mirror.reflect(info.value)

@@ -17,18 +17,18 @@ class HandlerManager(enableProfiling: Boolean,
   private val handlerChain = ListBuffer[AbstractTypeHandler](
     new NullHandler(),
     new StringHandler(stringSizeLimit),
-    new ArrayHandler(collectionSizeLimit),
-    new JavaCollectionHandler(collectionSizeLimit),
-    new SeqHandler(collectionSizeLimit),
-    new SetHandler(collectionSizeLimit),
-    new MapHandler(collectionSizeLimit),
+    new ArrayHandler(collectionSizeLimit, timeout),
+    new JavaCollectionHandler(collectionSizeLimit, timeout),
+    new SeqHandler(collectionSizeLimit, timeout),
+    new SetHandler(collectionSizeLimit, timeout),
+    new MapHandler(collectionSizeLimit, timeout),
     new ThrowableHandler(),
     new PrimitiveHandler(),
     new DatasetHandler(),
     new RDDHandler(),
     new SparkContextHandler(),
     new SparkSessionHandler(),
-    new ObjectHandler(stringSizeLimit, this, referenceManager)
+    new ObjectHandler(stringSizeLimit, this, referenceManager,timeout)
   ).map(new HandlerWrapper(_, enableProfiling))
 
   def getErrors: mutable.Seq[String] = handlerChain.flatMap(x => x.handler.getErrors)

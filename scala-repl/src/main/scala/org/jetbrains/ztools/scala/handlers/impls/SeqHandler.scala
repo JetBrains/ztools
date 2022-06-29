@@ -15,7 +15,7 @@
  */
 package org.jetbrains.ztools.scala.handlers.impls
 
-class SeqHandler(limit: Int) extends AbstractCollectionHandler(limit) {
+class SeqHandler(limit: Int, timeout: Int) extends AbstractCollectionHandler(limit, timeout) {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[Seq[_]]
 
   override def iterator(obj: Any): Iterator = new Iterator {
