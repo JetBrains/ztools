@@ -30,16 +30,16 @@ import scala.language.implicitConversions
 import scala.tools.nsc.interpreter.IMain
 import scala.util.Try
 
-abstract class VariablesViewImpl(val intp: IMain,
-                                 val timeout: Int,
-                                 val collectionSizeLimit: Int,
-                                 val stringSizeLimit: Int,
-                                 val blackList: List[String],
-                                 val whiteList: List[String] = null,
-                                 val filterUnitResults: Boolean,
-                                 val enableProfiling: Boolean,
-                                 val depth: Int,
-                                 val countResValues: Int = 5) extends VariablesView {
+class VariablesViewImpl(val intp: IMain,
+                        val timeout: Int,
+                        val collectionSizeLimit: Int,
+                        val stringSizeLimit: Int,
+                        val blackList: List[String],
+                        val whiteList: List[String] = null,
+                        val filterUnitResults: Boolean,
+                        val enableProfiling: Boolean,
+                        val depth: Int,
+                        val interpreterResCountLimit: Int = 5) extends VariablesView {
   private val interpreterHandler = new InterpreterHandler(intp)
   private val referenceManager = new ReferenceManager()
 
@@ -141,7 +141,7 @@ abstract class VariablesViewImpl(val intp: IMain,
       .filter(_.isSuccess)
       .map(_.get)
       .sortWith(_ > _)
-      .take(countResValues)
+      .take(interpreterResCountLimit)
       .map(num => "res" + num)
 
     val finalNames = otherVariables ++ sortedResVariables
