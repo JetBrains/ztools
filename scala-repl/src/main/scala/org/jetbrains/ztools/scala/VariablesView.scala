@@ -123,9 +123,7 @@ class VariablesView(val intp: IMain,
       }
     } catch {
       case t: Throwable =>
-        val error = f"${ExceptionUtils.getRootCauseMessage(t)}\n${ExceptionUtils.getStackTrace(t)}".take(1000)
         valMap += ResNames.VALUE -> ExceptionUtils.getRootCauseMessage(t)
-        errors += f"Parse $name variable exception.\n" + error
     }
   }
 
