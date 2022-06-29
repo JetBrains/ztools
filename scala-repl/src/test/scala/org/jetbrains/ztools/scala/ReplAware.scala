@@ -41,33 +41,23 @@ class ReplAware {
 
     bindings(iLoop.intp)
 
-    val wrapper = new ZtoolsInterpreterWrapper(iLoop.intp)
-
     def env(depth: Int, isProfilingEnabled: Boolean): VariablesViewImpl = new VariablesViewImpl(
+      intp = iLoop.intp,
       collectionSizeLimit = 100,
       stringSizeLimit = 400,
       blackList = "$intp,sc,spark,sqlContext,z,engine".split(",").toList,
       filterUnitResults = true,
       enableProfiling = isProfilingEnabled,
       depth = depth,
-      timeout = 5000) {
+      timeout = 5000) {}
 
-      override def variables(): List[String] = iLoop.intp.definedSymbolList.filter { x => x.isGetter }.map(_.name.toString).distinct
-
-      override def valueOfTerm(id: String): Option[Any] = wrapper.valueOfTerm(id)
-
-      override def typeOfExpression(id: String): String = {
-        val tpe = iLoop.intp.typeOfExpression(id, silent = true).toString()
-        tpe
-      }
-    }
 
     val result = body(new Repl {
       override def eval(code: String): Unit = {
         iLoop.intp.interpret(code)
       }
 
-      override def getVariablesView(depth: Int, enableProfiling: Boolean) = configure(env(depth, enableProfiling))
+      override def getVariablesView(depth: Int, enableProfiling: Boolean): VariablesView = configure(env(depth, enableProfiling))
     })
 
     iLoop.closeInterpreter()

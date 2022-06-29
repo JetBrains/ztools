@@ -13,16 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.handlers
+package org.jetbrains.ztools.scala.handlers.impls
 
 import org.jetbrains.ztools.scala.core.Loopback
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
 import scala.collection.mutable
 
 class MapHandler(limit: Int) extends AbstractTypeHandler {
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] =
+  override def handle(scalaInfo:  ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] =
     withJsonObject {
       json =>
+        val obj = scalaInfo.value
+        val id = scalaInfo.path
         val map = obj.asInstanceOf[Map[_, _]]
         val keys = mutable.MutableList[Any]()
         val values = mutable.MutableList[Any]()
@@ -31,8 +34,8 @@ class MapHandler(limit: Int) extends AbstractTypeHandler {
         var index = 0
         map.view.take(math.min(limit, map.size)).foreach {
           case (key, value) =>
-            keys += extract(loopback.pass(key, s"$id.key[$index]"))
-            values += extract(loopback.pass(value, s"$id.value[$index]"))
+            keys += loopback.pass(key, s"$id.key[$index]")
+            values += loopback.pass(value, s"$id.value[$index]")
         }
         index += 1
         json+=("key"-> keys)

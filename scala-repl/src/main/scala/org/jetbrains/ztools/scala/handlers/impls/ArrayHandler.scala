@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.handlers
+package org.jetbrains.ztools.scala.handlers.impls
 
-import org.jetbrains.ztools.scala.core.Loopback
+class ArrayHandler(limit: Int) extends AbstractCollectionHandler(limit) {
+  override def accept(obj: Any): Boolean = obj.isInstanceOf[Array[_]]
 
-import scala.collection.mutable
+  override def length(obj: Any): Int = obj.asInstanceOf[Array[_]].length
 
-class NullHandler extends AbstractTypeHandler {
-  override def accept(obj: Any): Boolean = obj == null
+  override def iterator(obj: Any): Iterator = new Iterator {
+    private val it = obj.asInstanceOf[Array[_]].iterator
 
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = mutable.Map[String, Any]()
+    override def hasNext: Boolean = it.hasNext
+
+    override def next: Any = it.next
+  }
 }

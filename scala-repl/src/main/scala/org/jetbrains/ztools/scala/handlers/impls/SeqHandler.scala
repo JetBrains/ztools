@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.handlers
+package org.jetbrains.ztools.scala.handlers.impls
 
 class SeqHandler(limit: Int) extends AbstractCollectionHandler(limit) {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[Seq[_]]

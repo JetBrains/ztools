@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.handlers
+package org.jetbrains.ztools.scala.handlers.impls
 
-import org.jetbrains.ztools.scala.core.Loopback
+import java.util
 
-import scala.collection.mutable
+class JavaCollectionHandler(limit: Int) extends AbstractCollectionHandler(limit) {
+  override def accept(obj: Any): Boolean = obj.isInstanceOf[util.Collection[_]]
 
-class SpecialsHandler(limit: Int) extends AbstractTypeHandler {
-  override def accept(obj: Any): Boolean = obj.getClass.getCanonicalName != null && obj.getClass.getCanonicalName.startsWith("scala.")
+  override def iterator(obj: Any): Iterator = new Iterator() {
+    private val it = obj.asInstanceOf[util.Collection[_]].iterator()
 
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
-    json =>
-      json+=("value"-> obj.toString.take(limit))
+    override def hasNext: Boolean = it.hasNext
+
+    override def next: Any = it.next()
   }
+
+  override def length(obj: Any): Int = obj.asInstanceOf[util.Collection[_]].size()
 }

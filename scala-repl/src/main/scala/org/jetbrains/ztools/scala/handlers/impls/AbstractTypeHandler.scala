@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.handlers
+package org.jetbrains.ztools.scala.handlers.impls
 
-import org.jetbrains.ztools.scala.core.{Names, TypeHandler}
+import org.jetbrains.ztools.scala.core.{ResNames, TypeHandler}
 
 import scala.collection.mutable
 
@@ -32,15 +32,8 @@ abstract class AbstractTypeHandler extends TypeHandler {
     obj
   }
 
-  protected def extract(json: mutable.Map[String, Any]): Any =
-    if (json.keys.size == 1)
-      json(Names.VALUE)
-    else
-      json
-
-  protected def wrap(obj: Any, tpe: String): mutable.Map[String, Any] = withJsonObject {
-    json =>
-      json+=(Names.VALUE-> obj)
-      json+=(Names.TYPE-> tpe)
-  }
+  protected def wrap(obj: Any, tpe: String): mutable.Map[String, Any] = mutable.Map[String, Any](
+    ResNames.VALUE -> Option(obj).orNull,
+    ResNames.TYPE -> tpe
+  )
 }

@@ -29,10 +29,13 @@
  */
 package org.jetbrains.ztools.scala.core
 
-object Names {
+object ResNames {
   val REF = "ref"
   val VALUE = "value"
   val TYPE = "type"
+  val TIME = "time"
+  val PATH = "path"
   val JVM_TYPE = "jvm-type"
+  val LENGTH = "length"
   val LAZY = "lazy"
 }

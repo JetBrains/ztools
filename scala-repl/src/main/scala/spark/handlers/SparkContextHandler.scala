@@ -16,18 +16,19 @@
 package spark.handlers
 
 import org.apache.spark.SparkContext
-import org.jetbrains.ztools.scala.core.{Loopback, Names}
-import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
+import org.jetbrains.ztools.scala.core.{Loopback, ResNames}
+import org.jetbrains.ztools.scala.handlers.impls.AbstractTypeHandler
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
 import scala.collection.mutable
 
 class SparkContextHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[SparkContext]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
+  override def handle(scalaInfo:  ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] = withJsonObject {
     json =>
-      val sc = obj.asInstanceOf[SparkContext]
-      json += (Names.VALUE -> withJsonObject { json =>
+      val sc = scalaInfo.value.asInstanceOf[SparkContext]
+      json += (ResNames.VALUE -> withJsonObject { json =>
         json += ("sparkUser" -> wrap(sc.sparkUser, "String"))
         json += ("sparkTime" -> wrap(sc.startTime, "Long"))
         json += ("applicationId()" -> wrap(sc.applicationId, "String"))

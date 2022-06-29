@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.handlers
+package org.jetbrains.ztools.scala.handlers.impls
 
-import org.jetbrains.ztools.scala.core.Loopback
+import org.jetbrains.ztools.scala.core.{Loopback, ResNames}
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
 import scala.collection.mutable
 
@@ -30,17 +31,16 @@ abstract class AbstractCollectionHandler(limit: Int) extends AbstractTypeHandler
 
   def length(obj: Any): Int
 
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String,Any] = withJsonObject {
-    json =>
-      json+=("jvm-type"-> obj.getClass.getCanonicalName)
-      json+=("length"-> length(obj))
-      json+=("value"-> withJsonArray { json =>
-        val it = iterator(obj)
-        var index = 0
-        while (it.hasNext && index < limit) {
-          json+=(extract(loopback.pass(it.next, s"$id[$index]")))
-          index += 1
-        }
-      })
-  }
+  override def handle(scalaInfo:  ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] = mutable.Map[String, Any](
+    ResNames.LENGTH -> length(scalaInfo.value),
+    ResNames.VALUE -> withJsonArray { json =>
+      val it = iterator(scalaInfo.value)
+      var index = 0
+      while (it.hasNext && index < limit) {
+        val id = scalaInfo.path
+        json += loopback.pass(it.next, s"$id[$index]")
+        index += 1
+      }
+    }
+  )
 }

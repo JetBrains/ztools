@@ -13,29 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.handlers
+package org.jetbrains.ztools.scala.handlers.impls
 
 import org.jetbrains.ztools.scala.core.Loopback
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
 import scala.collection.mutable
 
-class AnyValHandler extends AbstractTypeHandler {
-  override def accept(obj: Any): Boolean =
-    obj match {
-      case _: Byte => true
-      case _: Short => true
-      case _: Boolean => true
-      case _: Char => true
-      case _: Int => true
-      case _: Long => true
-      case _: Float => true
-      case _: Double => true
-      case _ => false
-    }
+class NullHandler extends AbstractTypeHandler {
+  override def accept(obj: Any): Boolean = obj == null
 
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] =
-    withJsonObject {
-      json =>
-        json += ("value" -> obj)
-    }
+  override def handle(scalaInfo:  ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] =
+    mutable.Map[String, Any]()
 }

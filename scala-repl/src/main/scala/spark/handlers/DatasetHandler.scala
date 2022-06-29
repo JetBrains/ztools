@@ -16,26 +16,35 @@
 package spark.handlers
 
 import org.apache.spark.sql.Dataset
-import org.jetbrains.ztools.scala.core.{Loopback, Names}
-import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
+import org.jetbrains.ztools.scala.core.{Loopback, ResNames}
+import org.jetbrains.ztools.scala.handlers.impls.AbstractTypeHandler
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
 import scala.collection.mutable
 
 class DatasetHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[Dataset[_]]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
-    json =>
-      val df = obj.asInstanceOf[Dataset[_]]
-      json += (Names.VALUE -> withJsonObject { json =>
-        json += ("schema()" -> wrap(withJsonArray {
-          schema =>
-            df.schema.zipWithIndex.foreach {
-              case (field, index) =>
-                schema += (extract(loopback.pass(field, s"$id.schema()[${index}]")))
-            }
-        }, "org.apache.spark.sql.types.StructType"))
-        json += ("getStorageLevel()" -> wrap(df.storageLevel.toString(), "org.apache.spark.storage.StorageLevel"))
-      })
+  override def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] = {
+    val obj = scalaInfo.value
+    val df = obj.asInstanceOf[Dataset[_]]
+
+
+    val jsonSchema = df.schema.fields.map(field =>
+      withJsonObject { jsonField =>
+        jsonField += "name" -> wrap(field.name, null)
+        jsonField += "nullable" -> wrap(field.nullable, null)
+        jsonField += "dataType" -> wrap(field.dataType.typeName, null)
+      }
+    )
+
+    val dfValue = mutable.Map(
+      "schema()" -> wrap(jsonSchema, "org.apache.spark.sql.types.StructType"),
+      "getStorageLevel()" -> wrap(df.storageLevel.toString(), "org.apache.spark.storage.StorageLevel")
+    )
+
+    mutable.Map(
+      ResNames.VALUE -> dfValue
+    )
   }
 }

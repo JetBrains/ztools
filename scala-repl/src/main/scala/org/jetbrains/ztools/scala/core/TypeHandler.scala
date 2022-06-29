@@ -29,10 +29,12 @@
  */
 package org.jetbrains.ztools.scala.core
 
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
+
 import scala.collection.mutable
 
 trait TypeHandler {
   def accept(obj: Any): Boolean
 
-  def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any]
+  def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any]
 }

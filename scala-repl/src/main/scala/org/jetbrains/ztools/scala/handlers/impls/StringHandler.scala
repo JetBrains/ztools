@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.handlers
+package org.jetbrains.ztools.scala.handlers.impls
 
-class SetHandler(limit: Int) extends AbstractCollectionHandler(limit) {
-  override def iterator(obj: Any): Iterator = new Iterator {
-    private val it = obj.asInstanceOf[Set[_]].iterator
+import org.jetbrains.ztools.scala.core.{Loopback, ResNames}
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
-    override def hasNext: Boolean = it.hasNext
+import scala.collection.mutable
 
-    override def next: Any = it.next()
-  }
+class StringHandler(limit: Int) extends AbstractTypeHandler {
+  override def accept(obj: Any): Boolean = obj.isInstanceOf[String]
 
-  override def length(obj: Any): Int = obj.asInstanceOf[Set[_]].size
-
-  override def accept(obj: Any): Boolean = obj.isInstanceOf[Set[_]]
+  override def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] =
+    mutable.Map(
+      ResNames.VALUE -> scalaInfo.value.asInstanceOf[String].take(limit)
+    )
 }
+

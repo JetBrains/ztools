@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala
+package org.jetbrains.ztools.scala.interpreter
 
 import scala.language.implicitConversions
 import scala.reflect.runtime.{universe => ru}

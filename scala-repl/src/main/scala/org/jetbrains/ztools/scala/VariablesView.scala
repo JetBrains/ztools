@@ -22,13 +22,7 @@ trait VariablesView {
 
   def toJson: String
 
-  def toJsonObject: mutable.Map[String, Any]
+  def resolveVariables: mutable.Map[String, Any]
 
-  def toJsonObject(path: String, deep: Int): mutable.Map[String, Any]
-
-  def variables(): List[String]
-
-  def valueOfTerm(id: String): Option[Any]
-
-  def typeOfExpression(id: String): String
+  def resolveVariable(path: String, deep: Int): mutable.Map[String, Any]
 }

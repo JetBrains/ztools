@@ -16,18 +16,22 @@
 package spark.handlers
 
 import org.apache.spark.sql.SparkSession
-import org.jetbrains.ztools.scala.core.{Loopback, Names}
-import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
+import org.jetbrains.ztools.scala.core.{Loopback, ResNames}
+import org.jetbrains.ztools.scala.handlers.impls.AbstractTypeHandler
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
 import scala.collection.mutable
 
 class SparkSessionHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[SparkSession]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
+  override def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] = withJsonObject {
     json =>
+      val obj = scalaInfo.value
+      val id = scalaInfo.path
+
       val spark = obj.asInstanceOf[SparkSession]
-      json += (Names.VALUE -> withJsonObject { json =>
+      json += (ResNames.VALUE -> withJsonObject { json =>
         json += ("version()" -> spark.version)
         json += ("sparkContext" -> loopback.pass(spark.sparkContext, s"$id.sparkContext"))
         json += ("sharedState" -> loopback.pass(spark.sharedState, s"$id.sharedState"))

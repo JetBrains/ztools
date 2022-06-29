@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.ztools.scala.handlers
+package org.jetbrains.ztools.scala.handlers.impls
 
-import org.jetbrains.ztools.scala.core.Loopback
+import org.jetbrains.ztools.scala.core.{Loopback, ResNames}
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
 import java.io.{PrintWriter, StringWriter}
 import scala.collection.mutable
@@ -23,12 +24,15 @@ import scala.collection.mutable
 class ThrowableHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[Throwable]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
-    json =>
-      val e = obj.asInstanceOf[Throwable]
-      val writer = new StringWriter()
-      val out = new PrintWriter(writer)
-      e.printStackTrace(out)
-      json+=("value"-> writer.toString)
+  override def handle(scalaInfo:  ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] = {
+    val obj = scalaInfo.value
+    val throwable = obj.asInstanceOf[Throwable]
+    val writer = new StringWriter()
+    val out = new PrintWriter(writer)
+    throwable.printStackTrace(out)
+
+    mutable.Map(
+      ResNames.VALUE -> writer.toString
+    )
   }
 }

@@ -16,18 +16,20 @@
 package spark.handlers
 
 import org.apache.spark.rdd.RDD
-import org.jetbrains.ztools.scala.core.{Loopback, Names}
-import org.jetbrains.ztools.scala.handlers.AbstractTypeHandler
+import org.jetbrains.ztools.scala.core.{Loopback, ResNames}
+import org.jetbrains.ztools.scala.handlers.impls.AbstractTypeHandler
+import org.jetbrains.ztools.scala.interpreter.ScalaVariableInfo
 
 import scala.collection.mutable
 
 class RDDHandler extends AbstractTypeHandler {
   override def accept(obj: Any): Boolean = obj.isInstanceOf[RDD[_]]
 
-  override def handle(obj: Any, id: String, loopback: Loopback): mutable.Map[String, Any] = withJsonObject {
+  override def handle(scalaInfo: ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] = withJsonObject {
     json =>
+      val obj = scalaInfo.value
       val rdd = obj.asInstanceOf[RDD[_]]
-      json += (Names.VALUE -> withJsonObject { value =>
+      json += (ResNames.VALUE -> withJsonObject { value =>
         value += ("getNumPartitions()" -> wrap(rdd.getNumPartitions, "Int"))
         value += ("name" -> wrap(rdd.name, "String"))
         value += ("id" -> wrap(rdd.id, "Int"))

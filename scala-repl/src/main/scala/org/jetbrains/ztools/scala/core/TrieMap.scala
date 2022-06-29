@@ -29,7 +29,6 @@
  */
 package org.jetbrains.ztools.scala.core
 
-import java.util.function.Function
 import scala.collection.mutable
 
 object TrieMap {

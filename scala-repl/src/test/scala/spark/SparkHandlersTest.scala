@@ -19,19 +19,11 @@ import org.apache.spark.sql.SparkSession
 import org.jetbrains.ztools.scala.{ReplAware, VariablesView, VariablesViewImpl}
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import spark.handlers.{DatasetHandler, RDDHandler, SparkSessionHandler}
 
 import scala.collection.mutable
 import scala.tools.nsc.interpreter.IMain
 
 class SparkHandlersTest extends ReplAware {
-
-  private trait Repl {
-    def eval(code: String): Unit
-
-    def getVariablesView(depth: Int = 3, enableProfiling: Boolean = false): VariablesView
-  }
-
   @Test
   def simpleTest(): Unit = {
     withRepl {
@@ -55,7 +47,7 @@ class SparkHandlersTest extends ReplAware {
           """
         val rdd = sc.parallelize(List((1, "hello"), (2, "world")))
         """)
-        val json = view.toJsonObject
+        val json = view.resolveVariables
         println(view.toJson)
         assertEquals("org.apache.spark.rdd.RDD[(Int, String)]", getInPath[String](json, "rdd.type"))
         assertEquals("Int", getInPath[Int](json, "rdd.value.id.type"))
@@ -74,7 +66,7 @@ class SparkHandlersTest extends ReplAware {
             |class A(val spark: SparkSession)
             |val a = new A(spark)
             |""".stripMargin)
-        val json = view.toJsonObject
+        val json = view.resolveVariables
         println(view.toJson)
     }
 
@@ -84,7 +76,7 @@ class SparkHandlersTest extends ReplAware {
   }
 
   @Test
-  def testMissingDataType(): Unit = {
+  def testDataFrame(): Unit = {
     withRepl { repl =>
       val view = repl.getVariablesView()
 
@@ -106,28 +98,16 @@ class SparkHandlersTest extends ReplAware {
           |        )
           |).toDF()
           |""".stripMargin)
-      val json = view.toJsonObject
+      val json = view.resolveVariables
+      println(view.toJson)
       assertEquals("", view.errors.mkString(","))
-      val schemaArray = getInPath[mutable.Map[String,Any]](json, "bank.value.schema()")("value").asInstanceOf[mutable.MutableList[Any]]
-      checkStructField(schemaArray(0).asInstanceOf[mutable.Map[String,Any]], { metadata =>
-        metadata("type") == "org.apache.spark.sql.types.Metadata" &&
-          metadata("value") == "{}"
-      }, { nullable =>
-        nullable("value").asInstanceOf[Boolean] == true
-      }, { dataType =>
-        dataType("jvm-type") == "org.apache.spark.sql.types.IntegerType$"
-      }, { name =>
-        name("value") == "age"
-      })
-      checkStructField(schemaArray(4).asInstanceOf[mutable.Map[String,Any]], { metadata =>
-        metadata("ref") == "bank.schema()[0].metadata"
-      }, { nullable =>
-        nullable("value") == true
-      }, { dataType =>
-        dataType("ref") == "bank.schema()[0].dataType"
-      }, { name =>
-        name("value") == "balance"
-      })
+      val schema = getInPath[mutable.Map[String, Any]](json, "bank.value.schema()")
+      val schemaArray = schema("value").asInstanceOf[Array[Any]]
+      checkStructField(schemaArray(0), true, "age", "integer")
+      checkStructField(schemaArray(1), true, "job", "string")
+      checkStructField(schemaArray(2), true, "marital", "string")
+      checkStructField(schemaArray(3), true, "education", "string")
+      checkStructField(schemaArray(4), true, "balance", "integer")
     }
   }
 
@@ -140,16 +120,17 @@ class SparkHandlersTest extends ReplAware {
         val rdd = sc.textFile("file:///home/nikita.pavlenko/big-data/online_retail.csv")
         """)
       val json = view.toJson
-      assertEquals( "{}", json)
+      assertEquals("{}", json)
   }
 
-  private def checkStructField(json: mutable.Map[String,Any], metadata: mutable.Map[String,Any] => Boolean, nullable: mutable.Map[String,Any] => Boolean,
-                               dataType: mutable.Map[String,Any] => Boolean, name: mutable.Map[String,Any] => Boolean): Unit = {
-    val innerJson = json("value").asInstanceOf[mutable.Map[String,Any]]
-    assert(metadata(innerJson("metadata").asInstanceOf[mutable.Map[String,Any]]))
-    assert(nullable(innerJson("nullable").asInstanceOf[mutable.Map[String,Any]]))
-    assert(dataType(innerJson("dataType").asInstanceOf[mutable.Map[String,Any]]))
-    assert(name(innerJson("name").asInstanceOf[mutable.Map[String,Any]]))
+  private def checkStructField(field: Any,
+                               nullable: Boolean,
+                               name: String,
+                               dataType: String): Unit = {
+    val json = field.asInstanceOf[mutable.Map[String, Any]]
+    assertEquals(nullable, json("nullable").asInstanceOf[mutable.Map[String, Any]]("value"))
+    assertEquals(name, json("name").asInstanceOf[mutable.Map[String, Any]]("value"))
+    assertEquals(dataType, json("dataType").asInstanceOf[mutable.Map[String, Any]]("value"))
   }
 
   override protected def configure(variablesView: VariablesViewImpl) =
@@ -163,7 +144,7 @@ class SparkHandlersTest extends ReplAware {
     spark = SparkSession
       .builder()
       .master("local[2]")
-      .appName("Simple Application2").getOrCreate()
+      .appName("Simple Application3").getOrCreate()
   }
 
   override def afterRepl(): Unit = {
