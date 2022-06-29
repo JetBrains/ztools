@@ -106,8 +106,8 @@ abstract class VariablesViewImpl(val intp: IMain,
   }
 
   override def resolveVariable(path: String, deep: Int): mutable.Map[String, Any] = {
-    val result = mutable.Map[String, Any](ResNames.PATH -> path)
-    val obj = touched(path)
+    val result = mutable.Map[String, Any]()
+    val obj = touched.get(path).orNull
     if (obj.ref != null) {
       result += (ResNames.VALUE -> mutable.Map[String, Any](ResNames.REF -> obj.ref))
     } else {
@@ -116,9 +116,9 @@ abstract class VariablesViewImpl(val intp: IMain,
     result
   }
 
-  private def parseInfo(info: ScalaVariableInfo, depth: Int): mutable.Map[String, Any] = {
+  private def parseInfo(info: ScalaVariableInfo, depth: Int): Any = {
     val loopback = new Loopback {
-      override def pass(obj: Any, id: String): mutable.Map[String, Any] = {
+      override def pass(obj: Any, id: String): Any = {
         val si = ScalaVariableInfo(isAccessible = true, isLazy = false, obj, null, id, referenceManager.getRef(obj, id))
         parseInfo(si, depth - 1)
       }
@@ -155,13 +155,17 @@ abstract class VariablesViewImpl(val intp: IMain,
 
 
   @inline
-  def profile(body: => mutable.Map[String, Any]): mutable.Map[String, Any] = {
+  def profile(body: => Any): Any = {
     if (enableProfiling) {
       val t = System.nanoTime()
-      val newBody: mutable.Map[String, Any] = body
-      newBody += (ResNames.TIME -> (System.currentTimeMillis() - t))
+      val newBody = body
+      newBody match {
+        case map: mutable.Map[String, Any] => map += (ResNames.TIME -> (System.currentTimeMillis() - t))
+        case _ =>
+      }
       newBody
-    } else body
+    } else
+      body
   }
 
   private def checkTimeout(startTimeout: Long, passed: Int, total: Int): Boolean = {

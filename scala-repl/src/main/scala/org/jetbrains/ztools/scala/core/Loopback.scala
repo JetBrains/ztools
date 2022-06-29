@@ -29,8 +29,6 @@
  */
 package org.jetbrains.ztools.scala.core
 
-import scala.collection.mutable
-
 trait Loopback {
-  def pass(obj: Any, id: String): mutable.Map[String, Any]
+  def pass(obj: Any, id: String): Any
 }

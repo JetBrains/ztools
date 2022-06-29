@@ -36,6 +36,7 @@ class PrimitiveHandler extends AbstractTypeHandler {
 
   override def handle(scalaInfo:  ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] =
     mutable.Map[String, Any](
-      ResNames.VALUE -> scalaInfo.value
+      ResNames.VALUE -> scalaInfo.value,
+      ResNames.IS_PRIMITIVE -> scalaInfo.value
     )
 }

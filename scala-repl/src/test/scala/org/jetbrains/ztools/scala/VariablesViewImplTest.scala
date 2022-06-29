@@ -15,7 +15,6 @@
  */
 package org.jetbrains.ztools.scala
 
-import org.jetbrains.ztools.scala.core.ResNames
 import org.junit.Assert.{assertEquals, assertNotNull, assertTrue}
 import org.junit.Test
 
@@ -33,10 +32,8 @@ class VariablesViewImplTest extends ReplAware {
       assertNotNull(view)
       var json = view.resolveVariables
       println(view.toJson)
-      val x = json("x").asInstanceOf[mutable.Map[String, Any]]
-      assertEquals(2, x.keys.size)
-      assertEquals(1, x("value"))
-      assertEquals("Int", x("type"))
+      val x = json("x").asInstanceOf[Int]
+      assertEquals(1, x)
       assertEquals(1, json.keys.size)
 
       intp.eval("val list = List(1,2,3,4)")
@@ -47,7 +44,7 @@ class VariablesViewImplTest extends ReplAware {
       assertEquals(4, list("length"))
       assertEquals("List[Int]", list("type"))
       val values = list("value").asInstanceOf[mutable.MutableList[mutable.Map[String, Any]]]
-      assertEquals((mutable.MutableList[Any]() += (1) += (2) += 3 += (4)).toString, values.map{_(ResNames.VALUE)}.toString)
+      assertEquals((mutable.MutableList[Any]() += 1 += 2 += 3 += 4).toString, values.toString)
       assertEquals(2, json.keys.size)
 
       intp.eval("val map = Map(1 -> 2, 2 -> 3, 3 -> 4)")
@@ -55,24 +52,23 @@ class VariablesViewImplTest extends ReplAware {
       println(view.toJson)
       val map = json("map").asInstanceOf[mutable.Map[String, Any]]
       assertEquals(5, map.keys.size)
-      assertEquals(3, map("length"));
+      assertEquals(3, map("length"))
       assertEquals("scala.collection.immutable.Map[Int,Int]", map("type"))
       val m = Map(1 -> 2, 2 -> 3, 3 -> 4)
-      val key = map("key").asInstanceOf[mutable.MutableList[Any]](0).asInstanceOf[Int]
-      val value = map("value").asInstanceOf[mutable.MutableList[Any]](0).asInstanceOf[Int]
+      val key = map("key").asInstanceOf[mutable.MutableList[Any]].head.asInstanceOf[Int]
+      val value = map("value").asInstanceOf[mutable.MutableList[Any]].head.asInstanceOf[Int]
       assertEquals(value, m(key))
       assertEquals(3, json.keys.size)
 
       intp.eval("1 + 1")
       json = view.resolveVariables
-      val res1 = json(s"res$base").asInstanceOf[mutable.Map[String, Any]]
-      assertEquals(2, res1.keys.size)
-      assertEquals(2, res1("value").asInstanceOf[Int])
-      assertEquals("Int", res1("type"))
+      val result = json(s"res$base").asInstanceOf[Int]
+      assertEquals(2, result)
       assertEquals(4, json.keys.size)
     }
   }
 
+  //noinspection AssertBetweenInconvertibleTypes
   @Test
   def testObjects(): Unit = {
     withRepl { intp =>
@@ -87,11 +83,9 @@ class VariablesViewImplTest extends ReplAware {
       assertEquals("iw$A", a("type"))
       val aObj = a("value").asInstanceOf[mutable.Map[String, Any]]
       assertEquals(1, aObj.keys.size)
-      val ax = aObj("x").asInstanceOf[mutable.Map[String, Any]]
-      assertEquals(2, ax.keys.size)
-      assertEquals(1, ax("value"))
+      val ax = aObj("x").asInstanceOf[Int]
+      assertEquals(1, ax)
       // scala 2.11 returns scala.Int instead of Int in scala 2.12
-      assertTrue(ax("type") == "Int" || ax("type") == "scala.Int")
       assertEquals(1, json.keys.size)
 
       val qDef = "class Q {\n" + "val a = Array(1,2,3)\n" + "val b = List(\"hello\", \"world\")\n" + "val c: List[List[String]] = List()\n" + "var y = 10\n" + "def m(): Int = 10\n" + "}"
@@ -140,7 +134,7 @@ class VariablesViewImplTest extends ReplAware {
 
       val json = view.resolveVariables
       assertEquals(2, json.keys.size)
-      assertEquals(10, getInPath[Int](json, "b.value.q.value.x.value"))
+      assertEquals(10, getInPath[Int](json, "b.value.q.value.x"))
     }
   }
 
@@ -173,18 +167,18 @@ class VariablesViewImplTest extends ReplAware {
       intp.eval("b.q.x = 11")
       json = view.resolveVariables
       assertEquals(1, json.keys.size)
-      assertEquals(11, getInPath[Int](json, "b.value.p.value.x.value"))
+      assertEquals(11, getInPath[Int](json, "b.value.p.value.x"))
       assertEquals("b.p", getInPath(json, "b.value.q.ref"))
 
       intp.eval("b.p = null")
       json = view.resolveVariables
       assertEquals(1, json
-        ("b").asInstanceOf[mutable.Map[String, Any]]
+      ("b").asInstanceOf[mutable.Map[String, Any]]
         ("value").asInstanceOf[mutable.Map[String, Any]]
         ("p").asInstanceOf[mutable.Map[String, Any]]
         .keys.size) // type only
 
-      assertEquals(11, getInPath[Int](json, "b.value.q.value.x.value"))
+      assertEquals(11, getInPath[Int](json, "b.value.q.value.x"))
     }
   }
 
@@ -304,61 +298,8 @@ class VariablesViewImplTest extends ReplAware {
       val json = env.resolveVariable("b", 2)
       //      // {"path":"b.a","value":{"type":"Line_1.A","value":{"id":{"type":"kotlin.Int","value":"10"}}}}
       //      println(json.toString(2))
-      assertEquals(2, json.keys.size) // path & value
+      assertEquals(1, json.keys.size) // path & value
       //      println(getInPath(json, "value.type"))
-    }
-  }
-
-  @Test
-  def testTraverseAlongThePathWithRefs(): Unit = {
-    val code =
-      """
-        |class A {
-        |  var strInA : String = _
-        |  var memberB : B = _
-        |}
-        |
-        |class B {
-        |  var strInB : String = _
-        |  var memberA : A = _
-        |}
-        |
-        |class C {
-        |    val a = new A()
-        |    val b = new B()
-        |}
-        |
-        |def getC(): C = {
-        |    val c = new C()
-        |    c.a.strInA = "class A"
-        |    c.b.strInB = "class B"
-        |    c.a.memberB = c.b
-        |    c.b.memberA = c.a
-        |    c
-        |}
-        |class D(val c: C, val a: A)
-        |class E(val d: D)
-        |val e = new E(new D(getC(), new A()))
-        |""".stripMargin
-    withRepl { intp =>
-      intp.eval(code)
-      val env = intp.getVariablesView(2)
-      env.toJson
-      val obj = env.resolveVariable("e.d.c", 3)
-      /*
-      {
-        "path": "e.d.c",
-        "value": {
-          "type": "C",
-          "value": {
-        "a": {
-          "type": "A"
-            ....
-       */
-      assertEquals("e.d.c", obj("path"))
-      // test references
-      assertEquals("e.d.c.b", getInPath(obj, "value.value.a.value.memberB.ref"))
-      assertEquals("e.d.c.a", getInPath(obj, "value.value.b.value.memberA.ref"))
     }
   }
 
@@ -424,8 +365,7 @@ class VariablesViewImplTest extends ReplAware {
       intp.eval("val a = 2.0")
       val json = view.resolveVariables
       //      println(json.toString(2))
-      assertEquals("Double", json("a").asInstanceOf[mutable.Map[String, Any]]("type"))
-      assertEquals("2.0", getInPath[Double](json, "a.value").toString)
+      assertEquals("2.0", getInPath[Double](json, "a").toString)
     }
   }
 
@@ -456,7 +396,7 @@ class VariablesViewImplTest extends ReplAware {
       println(view.toJson)
       assertEquals("Array[iw$A]", getInPath(json, "b.type"))
       val arr = json("b").asInstanceOf[mutable.Map[String, Any]]("value").asInstanceOf[mutable.MutableList[Any]]
-      assertEquals(2, getInPath[Int](arr(1).asInstanceOf[mutable.Map[String, Any]], "value.x.value"))
+      assertEquals(2, getInPath[Int](arr(1).asInstanceOf[mutable.Map[String, Any]], "value.x"))
     }
   }
 
@@ -474,7 +414,7 @@ class VariablesViewImplTest extends ReplAware {
       intp.eval(code)
       val json = view.resolveVariables
       println(view.toJson)
-      val obj = getInPath[mutable.Map[String,Any]](json, "a.value.x")
+      val obj = getInPath[mutable.Map[String, Any]](json, "a.value.x")
       assertEquals(2, obj.size)
       assertEquals("scala.Int", obj("type"))
       assertTrue(obj("lazy").asInstanceOf[Boolean])

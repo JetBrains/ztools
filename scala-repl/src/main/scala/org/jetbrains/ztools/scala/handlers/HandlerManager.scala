@@ -30,7 +30,7 @@ class HandlerManager(timeout: Int,
     new ObjectHandler(stringSizeLimit, this, referenceManager)
   ).map(new HandlerWrapper(_))
 
-  def handleVariable(info: ScalaVariableInfo, loopback: Loopback, depth: Int): mutable.Map[String, Any] = {
-    handlerChain.find(_.accept(info)).map(_.handle(info, loopback,depth)).getOrElse(mutable.Map[String, Any]())
+  def handleVariable(info: ScalaVariableInfo, loopback: Loopback, depth: Int): Any = {
+    handlerChain.find(_.accept(info)).map(_.handle(info, loopback, depth)).getOrElse(mutable.Map[String, Any]())
   }
 }
