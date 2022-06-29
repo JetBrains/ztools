@@ -917,9 +917,9 @@ try {
 
   implicit val ztoolsFormats: AnyRef with Formats = Serialization.formats(NoTypeHints)
   val variablesJson = variableView.getZtoolsJsonResult
-  println("--ztools-scala--")
+  println("---ztools-scala---")
   println(variablesJson)
-  println("--ztools-scala--")
+  println("---ztools-scala---")
 }
 catch {
   case t: Throwable =>
@@ -931,7 +931,7 @@ catch {
     val result = Serialization.write(Map(
       "errors" -> Array(f"${ExceptionUtils.getMessage(t)}\n${ExceptionUtils.getStackTrace(t)}")
     ))
-    println("--ztools-scala--")
+    println("---ztools-scala---")
     println(result)
-    println("--ztools-scala--")
+    println("---ztools-scala---")
 }
