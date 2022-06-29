@@ -30,16 +30,25 @@ class DatasetHandler extends AbstractTypeHandler {
     val df = obj.asInstanceOf[Dataset[_]]
 
 
-    val jsonSchema = df.schema.fields.map(field =>
-      withJsonObject { jsonField =>
+    val schema = df.schema
+    val jsonSchemaColumns = schema.fields.map(field => {
+      val value = withJsonObject { jsonField =>
         jsonField += "name" -> wrap(field.name, null)
         jsonField += "nullable" -> wrap(field.nullable, null)
         jsonField += "dataType" -> wrap(field.dataType.typeName, null)
       }
+      wrap(value, "org.apache.spark.sql.types.StructField")
+    }
+    )
+
+    val jsonSchema = mutable.Map(
+      ResNames.VALUE -> jsonSchemaColumns,
+      ResNames.TYPE -> "org.apache.spark.sql.types.StructType",
+      ResNames.LENGTH -> jsonSchemaColumns.length
     )
 
     val dfValue = mutable.Map(
-      "schema()" -> wrap(jsonSchema, "org.apache.spark.sql.types.StructType"),
+      "schema()" -> jsonSchema,
       "getStorageLevel()" -> wrap(df.storageLevel.toString(), "org.apache.spark.storage.StorageLevel")
     )
 
