@@ -16,7 +16,7 @@
 package spark
 
 import org.apache.spark.sql.SparkSession
-import org.jetbrains.ztools.scala.{ReplAware, VariablesView, VariablesViewImpl}
+import org.jetbrains.ztools.scala.{ReplAware, VariablesView}
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -133,7 +133,7 @@ class SparkHandlersTest extends ReplAware {
     assertEquals(dataType, json("dataType").asInstanceOf[mutable.Map[String, Any]]("value"))
   }
 
-  override protected def configure(variablesView: VariablesViewImpl) =
+  override protected def configure(variablesView: VariablesView) =
     super.configure(variablesView)
 
 

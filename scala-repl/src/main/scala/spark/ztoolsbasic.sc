@@ -1,5 +1,5 @@
 try {
-  import org.jetbrains.ztools.scala.VariablesViewImpl
+  import org.jetbrains.ztools.scala.VariablesView
 
   import scala.tools.nsc.interpreter.IMain
 
@@ -19,7 +19,7 @@ try {
   val whiteList: List[String] = null
 
 
-  val variableView = new VariablesViewImpl(
+  val variableView = new VariablesView(
     intp = iMain,
     timeout = timeout,
     collectionSizeLimit = collectionSizeLimit,

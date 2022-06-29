@@ -41,7 +41,7 @@ class ReplAware {
 
     bindings(iLoop.intp)
 
-    def env(depth: Int, isProfilingEnabled: Boolean): VariablesViewImpl = new VariablesViewImpl(
+    def env(depth: Int, isProfilingEnabled: Boolean): VariablesView = new VariablesView(
       intp = iLoop.intp,
       collectionSizeLimit = 100,
       stringSizeLimit = 400,
@@ -49,7 +49,7 @@ class ReplAware {
       filterUnitResults = true,
       enableProfiling = isProfilingEnabled,
       depth = depth,
-      timeout = 5000) {}
+      timeout = 5000)
 
 
     val result = body(new Repl {
@@ -66,7 +66,7 @@ class ReplAware {
     result
   }
 
-  protected def configure(variablesView: VariablesViewImpl): VariablesView = variablesView
+  protected def configure(variablesView: VariablesView): VariablesView = variablesView
 
   protected def beforeRepl(): Unit = {}
 
