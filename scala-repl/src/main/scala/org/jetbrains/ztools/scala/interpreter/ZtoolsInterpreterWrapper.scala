@@ -15,12 +15,13 @@
  */
 package org.jetbrains.ztools.scala.interpreter
 
-import scala.language.implicitConversions
-import scala.reflect.runtime.{universe => ru}
 import scala.tools.nsc.interpreter.IMain
-
 //noinspection TypeAnnotation
 class ZtoolsInterpreterWrapper(val iMain: IMain) {
+  import scala.language.implicitConversions
+  import scala.reflect.runtime.{universe => ru}
+
+
   import iMain.global._
 
   import scala.util.{Try => Trying}

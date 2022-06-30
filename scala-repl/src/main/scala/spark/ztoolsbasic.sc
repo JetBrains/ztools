@@ -2,10 +2,15 @@ import org.json4s.{Formats, NoTypeHints}
 import org.json4s.jackson.Serialization
 
 try {
-  import org.jetbrains.ztools.scala.VariablesView
+  import org.apache.commons.lang.exception.ExceptionUtils
+  import org.apache.spark.sql.SparkSession
 
+  import java.io.{PrintWriter, StringWriter}
+  import java.util
+  import scala.collection.mutable.ListBuffer
+  import scala.collection.{immutable, mutable}
+  import scala.reflect.api.JavaUniverse
   import scala.tools.nsc.interpreter.IMain
-
 
   /**
    * Main section

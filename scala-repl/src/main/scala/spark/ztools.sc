@@ -8,6 +8,16 @@ try {
   import scala.collection.{immutable, mutable}
   import scala.reflect.api.JavaUniverse
   import scala.tools.nsc.interpreter.IMain
+  import org.json4s.jackson.Serialization
+  import org.json4s.{Formats, NoTypeHints}
+
+  import java.util.function.{Function => JFunction}
+  import java.util.regex.Pattern
+  import scala.language.implicitConversions
+  import scala.util.Try
+  import org.apache.spark.sql.Dataset
+  import org.apache.spark.rdd.RDD
+  import org.apache.spark.SparkContext
 
   trait Loopback {
     def pass(obj: Any, id: String): Any
@@ -513,12 +523,12 @@ try {
       null
   }
 
-  import scala.language.implicitConversions
-  import scala.reflect.runtime.{universe => ru}
+
 
   //noinspection TypeAnnotation
   class ZtoolsInterpreterWrapper(val iMain: IMain) {
-
+    import scala.language.implicitConversions
+    import scala.reflect.runtime.{universe => ru}
     import iMain.global._
 
     import scala.util.{Try => Trying}
@@ -632,13 +642,7 @@ try {
   }
 
 
-  import org.json4s.jackson.Serialization
-  import org.json4s.{Formats, NoTypeHints}
 
-  import java.util.function.{Function => JFunction}
-  import java.util.regex.Pattern
-  import scala.language.implicitConversions
-  import scala.util.Try
 
   class VariablesView(val intp: IMain,
                       val timeout: Int,
@@ -797,9 +801,6 @@ try {
     }
   }
 
-
-  import org.apache.spark.sql.Dataset
-
   class DatasetHandler extends AbstractTypeHandler {
     override def accept(obj: Any): Boolean = obj.isInstanceOf[Dataset[_]]
 
@@ -837,7 +838,6 @@ try {
   }
 
 
-  import org.apache.spark.rdd.RDD
 
   class RDDHandler extends AbstractTypeHandler {
     override def accept(obj: Any): Boolean = obj.isInstanceOf[RDD[_]]
@@ -855,8 +855,6 @@ try {
         })
     }
   }
-
-  import org.apache.spark.SparkContext
 
   class SparkContextHandler extends AbstractTypeHandler {
     override def accept(obj: Any): Boolean = obj.isInstanceOf[SparkContext]
